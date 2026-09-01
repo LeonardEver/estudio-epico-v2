@@ -1,7 +1,7 @@
 import { Reveal } from "./Reveal";
 
 const points = [
-  "Você não precisa saber produzir música.",
+  "Você passa sua ideia e transformamos ela em realidade. Sem complicação, sem enrolação, sem assinatura. Apenas uma música profissional pronta para você.",
   "Você não precisa de um estúdio.",
   "Você não precisa saber arranjar nem mixar.",
   "Você só precisa da ideia — a produção é feita para você.",

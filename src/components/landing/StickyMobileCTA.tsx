@@ -1,9 +1,14 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { CHECKOUT_URL, CTA_LABEL, PRICE_ANCHOR, PRICE_NOW } from "./offer";
+import { CTA_LABEL, PRICE_ANCHOR, PRICE_NOW } from "./offer";
+import { useCheckoutFlow } from "./checkout-flow";
+import { analytics } from "@/lib/analytics";
 
 export function StickyMobileCTA() {
   const [visible, setVisible] = useState(false);
+  const { openBriefing } = useCheckoutFlow();
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.85);
@@ -23,14 +28,18 @@ export function StickyMobileCTA() {
           <p className="text-[11px] text-muted-foreground line-through">{PRICE_ANCHOR}</p>
           <p className="offer-gradient-text font-display text-2xl font-extrabold">{PRICE_NOW}</p>
         </div>
-        <a
-          href={CHECKOUT_URL}
-          className="flex min-h-13 flex-1 items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-price)] font-display text-sm font-bold text-primary-foreground"
+        <button
+          type="button"
+          onClick={() => {
+            analytics.ctaClick();
+            openBriefing();
+          }}
+          className="flex min-h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-price)] font-display text-sm font-bold text-primary-foreground"
           style={{ boxShadow: "var(--shadow-offer)" }}
         >
           {CTA_LABEL}
           <ArrowRight className="size-4" />
-        </a>
+        </button>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { ObjectionSection } from "@/components/landing/ObjectionSection";
 import { FAQ } from "@/components/landing/FAQ";
 import { FinalOffer } from "@/components/landing/FinalOffer";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
+import { CheckoutFlowProvider } from "@/components/landing/checkout-flow";
 
 const title = "Música personalizada por R$67 | Sua ideia vira uma música profissional";
 const description =
@@ -31,25 +32,27 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <main className="min-h-screen bg-background pb-20 lg:pb-0">
-      <HeroOffer />
-      <UGCVideo />
-      <BenefitGrid />
-      <HowItWorks />
-      <AudioShowcase />
-      <TestimonialSection />
-      <ValueSection />
-      <ObjectionSection />
-      <FAQ />
-      <FinalOffer />
-      <footer className="border-t border-border py-10 text-center text-xs text-muted-foreground">
-        <p className="font-display text-sm font-bold tracking-widest text-foreground">
-          PRODUÇÃO MUSICAL PERSONALIZADA
-        </p>
-        <p className="mt-2">[CONTATO: inserir e-mail ou WhatsApp]</p>
-        <p className="mt-1">© {new Date().getFullYear()} — Todos os direitos reservados.</p>
-      </footer>
-      <StickyMobileCTA />
-    </main>
+    <CheckoutFlowProvider>
+      <main className="min-h-screen bg-background pb-20 lg:pb-0">
+        <HeroOffer />
+        <UGCVideo />
+        <BenefitGrid />
+        <HowItWorks />
+        <AudioShowcase />
+        <TestimonialSection />
+        <ValueSection />
+        <ObjectionSection />
+        <FAQ />
+        <FinalOffer />
+        <footer className="border-t border-border py-10 text-center text-xs text-muted-foreground">
+          <p className="font-display text-sm font-bold tracking-widest text-foreground">
+            ESTUDIO ÉPICO - PRODUÇÃO MUSICAL PROFISSIONAL
+          </p>
+          <p className="mt-2">[CONTATO: inserir e-mail ou WhatsApp]</p>
+          <p className="mt-1">© {new Date().getFullYear()} — Todos os direitos reservados.</p>
+        </footer>
+        <StickyMobileCTA />
+      </main>
+    </CheckoutFlowProvider>
   );
 }

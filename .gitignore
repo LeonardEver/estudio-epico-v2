@@ -16,6 +16,16 @@ dist-ssr
 .nitro
 *.local
 
+# Environment files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Google service account keys downloaded from the Cloud Console
+credentials.json
+*-credentials.json
+service-account*.json
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars

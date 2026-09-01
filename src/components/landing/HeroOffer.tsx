@@ -30,7 +30,7 @@ export function HeroOffer() {
           transition={{ duration: 0.25 }}
           className="rounded-full border border-border bg-surface/70 px-4 py-1.5 text-[11px] font-semibold tracking-[0.22em] text-muted-foreground backdrop-blur"
         >
-          PRODUÇÃO MUSICAL PERSONALIZADA
+          ESTUDIO ÉPICO - PRODUÇÃO MUSICAL PROFISSIONAL
         </motion.p>
 
         <motion.h1
@@ -82,7 +82,8 @@ export function HeroOffer() {
         </ul>
 
         <p className="mt-6 text-sm font-medium text-foreground/80">
-          Você não precisa saber produzir música.
+          Você passa sua ideia e transformamos ela em realidade. Sem complicação, sem enrolação, sem
+          assinatura. Apenas uma música profissional pronta para você.
         </p>
       </div>
     </section>

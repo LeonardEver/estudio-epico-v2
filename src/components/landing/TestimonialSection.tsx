@@ -15,7 +15,9 @@ export function TestimonialSection() {
     <section className="border-y border-border bg-surface/40 py-16 sm:py-24">
       <div className="mx-auto max-w-5xl px-5">
         <Reveal>
-          <h2 className="text-3xl font-bold sm:text-5xl">Quem já transformou uma ideia em música</h2>
+          <h2 className="text-3xl font-bold sm:text-5xl">
+            Quem já transformou uma ideia em música
+          </h2>
         </Reveal>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-3">

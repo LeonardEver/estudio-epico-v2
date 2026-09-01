@@ -12,19 +12,26 @@ type Track = {
 };
 
 const tracks: Track[] = [
-  { title: "[TÍTULO DA FAIXA]", genre: "Electronic", mood: "Energético" },
-  { title: "[TÍTULO DA FAIXA]", genre: "Pop", mood: "Emocional" },
-  { title: "[TÍTULO DA FAIXA]", genre: "Trap", mood: "Pesado" },
-  { title: "[TÍTULO DA FAIXA]", genre: "House", mood: "Dançante" },
-  { title: "[TÍTULO DA FAIXA]", genre: "Trance", mood: "Hipnótico" },
-  { title: "[TÍTULO DA FAIXA]", genre: "Rock", mood: "Intenso" },
+  {
+    title: "Carnes do João",
+    genre: "Sertanejo",
+    mood: "Energético",
+    src: "/audio/carnes-do-joao.mp3",
+  },
+  { title: "Lili Roupas", genre: "Pop", mood: "Emocional", src: "/audio/lili-roupas.mp3" },
+  { title: "Viva Leve - Viagens", genre: "Samba", mood: "Leve", src: "/audio/viva-leve.mp3" },
+  {
+    title: "Aniversário da Luiza",
+    genre: "Acústico",
+    mood: "Emocional",
+    src: "/audio/niverluiza.mp3",
+  },
 ];
 
 const BARS = 44;
 const heights = Array.from({ length: BARS }, (_, i) =>
   Math.round(28 + Math.abs(Math.sin(i * 1.7) * 52) + ((i * 13) % 17)),
 );
-
 
 function Waveform({ progress, active }: { progress: number; active: boolean }) {
   return (
