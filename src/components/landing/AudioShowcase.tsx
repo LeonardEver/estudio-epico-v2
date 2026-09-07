@@ -1,27 +1,44 @@
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { Reveal } from "./Reveal";
+import { ScrollCTA } from "./ScrollCTA";
 import { cn } from "@/lib/utils";
 
 type Track = {
   title: string;
+  situation: string;
   genre: string;
   mood: string;
   /** Edite aqui: coloque o arquivo em public/audio/ e informe o caminho. */
   src?: string;
 };
 
+// Resultados reais: cada música começou com uma ideia enviada por um cliente.
 const tracks: Track[] = [
   {
     title: "Carnes do João",
+    situation: "Jingle para loja",
     genre: "Sertanejo",
     mood: "Energético",
     src: "/audio/carnes-do-joao.mp3",
   },
-  { title: "Lili Roupas", genre: "Pop", mood: "Emocional", src: "/audio/lili-roupas.mp3" },
-  { title: "Viva Leve - Viagens", genre: "Samba", mood: "Leve", src: "/audio/viva-leve.mp3" },
+  {
+    title: "Lili Roupas",
+    situation: "Música para marca",
+    genre: "Pop",
+    mood: "Emocional",
+    src: "/audio/lili-roupas.mp3",
+  },
+  {
+    title: "Viva Leve - Viagens",
+    situation: "Música para negócio",
+    genre: "Samba",
+    mood: "Leve",
+    src: "/audio/viva-leve.mp3",
+  },
   {
     title: "Aniversário da Luiza",
+    situation: "Presente de aniversário",
     genre: "Acústico",
     mood: "Emocional",
     src: "/audio/niverluiza.mp3",
@@ -82,22 +99,29 @@ export function AudioShowcase() {
   };
 
   return (
-    <section className="py-16 sm:py-24">
-      <div className="mx-auto max-w-5xl px-5">
+    <section id="exemplos" className="py-16 sm:py-24">
+      <div className="mx-auto max-w-5xl px-5 text-center">
         <Reveal>
-          <h2 className="text-3xl font-bold sm:text-5xl">Exemplos de áudio</h2>
-          <p className="mt-3 text-muted-foreground">
-            Cada música é produzida do zero a partir da ideia do cliente.
+          <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
+            Resultados reais
+          </p>
+          <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-5xl">
+            Toda música começa com uma ideia.{" "}
+            <span className="offer-gradient-text">Ouça o resultado.</span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
+            Cada uma dessas músicas foi criada do zero a partir do pedido de um cliente — um
+            presente, um jingle, uma homenagem. Aperte o play:
           </p>
         </Reveal>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        <div className="mt-10 grid gap-4 text-left sm:grid-cols-2">
           {tracks.map((track, i) => {
             const active = current === i;
             const disabled = !track.src;
             return (
               <Reveal key={`${track.genre}-${i}`} delay={(i % 2) * 0.04}>
-                <article className="rounded-2xl border border-border bg-surface-2/70 p-5">
+                <article className="h-full rounded-2xl border border-border bg-surface-2/70 p-5">
                   <div className="flex items-center gap-4">
                     <button
                       type="button"
@@ -113,7 +137,10 @@ export function AudioShowcase() {
                       )}
                     </button>
                     <div className="min-w-0">
-                      <h3 className="truncate text-base font-semibold">{track.title}</h3>
+                      <p className="text-[11px] font-semibold tracking-[0.14em] text-accent uppercase">
+                        {track.situation}
+                      </p>
+                      <h3 className="mt-0.5 truncate text-base font-semibold">{track.title}</h3>
                       <p className="text-xs tracking-wide text-muted-foreground uppercase">
                         {track.genre} · {track.mood}
                       </p>
@@ -132,6 +159,19 @@ export function AudioShowcase() {
             );
           })}
         </div>
+
+        <Reveal delay={0.05}>
+          <p className="mt-9 text-sm text-muted-foreground sm:text-base">
+            Agora imagine uma música dessas com{" "}
+            <span className="text-foreground">a sua história.</span>
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div className="mt-8">
+            <ScrollCTA target="oferta" label="VER A OFERTA" />
+          </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -5,15 +5,16 @@
 import { z } from "zod";
 
 export const GENRES = [
-  "Pop",
-  "Rock",
   "Sertanejo",
+  "Pop",
   "Pagode",
-  "Samba",
   "Funk",
-  "Rap / Hip-Hop",
+  "Rock",
   "Eletrônica",
+  "MPB",
   "Gospel",
+  "Samba",
+  "Rap / Hip-Hop",
   "Outro",
 ] as const;
 
@@ -48,6 +49,21 @@ export type BriefFormValues = {
   genre: Genre;
   genreOther: string;
   mood: Mood[];
+  recipient?: string;
+  occasion?: string;
+  references?: string;
+};
+
+/** Extras opcionais oferecidos na página de pedido. */
+export const EXTRAS = ["COVER", "EXCLUSIVE_PAGE"] as const;
+export type Extra = (typeof EXTRAS)[number];
+
+export type PaymentMethod = "PIX" | "CARD";
+
+export type OrderFormValues = BriefFormValues & {
+  extras: Extra[];
+  bundle: boolean;
+  paymentMethod: PaymentMethod;
 };
 
 export const briefSchema = z
@@ -62,9 +78,10 @@ export const briefSchema = z
     whatsapp: z
       .string()
       .trim()
+      .min(8, "Informe seu WhatsApp")
       .max(40, "WhatsApp muito longo")
       .refine(
-        (value) => !value || /^[+]?[\d\s()-]{8,20}$/.test(value),
+        (value) => /^[+]?[\d\s()-]{8,20}$/.test(value),
         "Informe um WhatsApp válido (somente números)",
       ),
     lyricsPreference: z.enum(["HAS_LYRICS", "CREATE_LYRICS"]),
@@ -76,7 +93,13 @@ export const briefSchema = z
       .max(2000, "Descrição muito longa (máx. 2000 caracteres)"),
     genre: z.enum(GENRES),
     genreOther: z.string().trim().max(80, "Gênero muito longo"),
-    mood: z.array(z.enum(MOODS)).min(1, "Escolha pelo menos um clima").max(10),
+    mood: z.array(z.enum(MOODS)).max(10).optional(),
+    recipient: z.string().trim().max(120, "Nome muito longo").optional(),
+    occasion: z.string().trim().max(120, "Texto muito longo").optional(),
+    references: z.string().trim().max(2000, "Texto muito longo (máx. 2000 caracteres)").optional(),
+    extras: z.array(z.enum(EXTRAS)).max(2).optional(),
+    bundle: z.boolean().optional(),
+    paymentMethod: z.enum(["PIX", "CARD"]).optional(),
     utm: z.record(z.string(), z.string().max(200)).optional(),
   })
   .superRefine((values, ctx) => {

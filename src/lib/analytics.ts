@@ -46,6 +46,10 @@ export const analytics = {
   ctaClick(): void {
     track("CTA_Click");
   },
+  /** Fired when a navigation CTA scrolls to a funnel section. */
+  scrollCtaClick(section: string): void {
+    track("Scroll_CTA", { content_name: section });
+  },
   /** Fired when the briefing modal opens. */
   briefingOpened(): void {
     track("Briefing_Opened");
@@ -57,5 +61,35 @@ export const analytics = {
   /** Fired right before redirecting to the Kiwify checkout. */
   checkoutRedirect(orderId: string): void {
     track("InitiateCheckout", { order_id: orderId });
+  },
+  /** Fired when the order page (pagina de pedido) is viewed. */
+  viewOrderPage(): void {
+    track("ViewContent", { content_name: "pagina_pedido" });
+  },
+  /** Fired when an extra (capa ou pagina exclusiva) is added/removed. */
+  toggleExtra(extra: "capa" | "pagina", added: boolean): void {
+    track(added ? "AddToCart" : "RemoveFromCart", {
+      content_name: extra === "capa" ? "capa_personalizada" : "pagina_exclusiva",
+    });
+  },
+  /** Fired when the bundle (pacote completo) is selected. */
+  selectBundle(): void {
+    track("AddToCart", { content_name: "pacote_completo" });
+  },
+  /** Fired when the payment method is chosen on the order page. */
+  paymentMethodSelected(method: "PIX" | "CARD"): void {
+    track("AddPaymentInfo", { payment_method: method });
+  },
+  /** Fired when the streaming upsell is shown. */
+  streamingUpsellShown(): void {
+    track("ViewContent", { content_name: "upsell_streaming" });
+  },
+  /** Fired when the streaming upsell CTA is clicked. */
+  streamingUpsellAccepted(): void {
+    track("AddToCart", { content_name: "lancamento_streaming" });
+  },
+  /** Fired when the streaming upsell is declined. */
+  streamingUpsellDeclined(): void {
+    track("Upsell_Declined", { content_name: "lancamento_streaming" });
   },
 };

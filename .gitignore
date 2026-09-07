@@ -30,6 +30,9 @@ service-account*.json
 .wrangler/
 .dev.vars
 
+# Vercel (local project link)
+.vercel
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

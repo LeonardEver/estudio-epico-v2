@@ -1,32 +1,52 @@
+import { AudioLines, Download, MessageSquareText } from "lucide-react";
 import { Reveal } from "./Reveal";
+import { ScrollCTA } from "./ScrollCTA";
 
 const steps = [
-  { n: "01", title: "Você conta a ideia", text: "Estilo, clima, referência ou letra." },
-  { n: "02", title: "Nós produzimos", text: "A produção fica por nossa conta." },
-  { n: "03", title: "Você recebe", text: "Sua música pronta para ouvir." },
+  { n: "01", icon: MessageSquareText, text: "Você conta sua ideia." },
+  { n: "02", icon: AudioLines, text: "Nós transformamos sua ideia em música." },
+  { n: "03", icon: Download, text: "Você recebe sua música pronta." },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="border-y border-border bg-surface/40 py-16 sm:py-24">
-      <div className="mx-auto max-w-5xl px-5">
+    <section id="como-funciona" className="border-y border-border bg-surface/40 py-16 sm:py-24">
+      <div className="mx-auto max-w-3xl px-5 text-center">
         <Reveal>
-          <h2 className="text-3xl font-bold sm:text-5xl">Como funciona</h2>
+          <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
+            Como funciona
+          </p>
+          <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-5xl">Simples assim.</h2>
         </Reveal>
 
-        <div className="mt-10 grid gap-10 sm:grid-cols-3">
+        <div className="mt-10 space-y-2 text-left">
           {steps.map((step, i) => (
             <Reveal key={step.n} delay={i * 0.05}>
-              <div>
-                <p className="offer-gradient-text font-display text-6xl font-extrabold sm:text-7xl">
+              <div className="flex items-center gap-4 border-b border-border py-5 sm:gap-5">
+                <span className="offer-gradient-text font-display text-3xl font-extrabold sm:text-4xl">
                   {step.n}
-                </p>
-                <h3 className="mt-3 text-xl font-bold sm:text-2xl">{step.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{step.text}</p>
+                </span>
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
+                  <step.icon className="size-5 text-accent" />
+                </span>
+                <p className="text-base font-medium sm:text-lg">{step.text}</p>
               </div>
             </Reveal>
           ))}
         </div>
+
+        <Reveal delay={0.05}>
+          <p className="mt-8 text-sm text-muted-foreground">
+            Você não precisa saber nada de música.{" "}
+            <span className="text-foreground">Só da ideia.</span>
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div className="mt-7">
+            <ScrollCTA target="para-quem" label="VER PARA QUEM É" />
+          </div>
+        </Reveal>
       </div>
     </section>
   );

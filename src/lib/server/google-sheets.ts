@@ -8,6 +8,7 @@
  *   F lyrics_preference | G lyrics | H description | I genre | J genre_other
  *   K mood | L payment_status | M kiwify_transaction_id | N paid_at
  *   O delivery_status | P download_url | Q notification_status
+ *   R recipient | S occasion | T references | U extras | V bundle | W payment_method
  */
 import { createSign } from "node:crypto";
 import { env, privateKeyValue } from "./env";
@@ -15,7 +16,7 @@ import { env, privateKeyValue } from "./env";
 const SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-const HEADER_COUNT = 17; // A..Q
+const HEADER_COUNT = 23; // A..W
 
 export const HEADERS = [
   "order_id",
@@ -35,6 +36,12 @@ export const HEADERS = [
   "delivery_status",
   "download_url",
   "notification_status",
+  "recipient",
+  "occasion",
+  "references",
+  "extras",
+  "bundle",
+  "payment_method",
 ] as const;
 
 export type OrderRow = {
@@ -207,7 +214,7 @@ export async function appendOrderRow(cells: string[]): Promise<void> {
   while (padded.length < HEADER_COUNT) padded.push("");
   const name = await sheetName();
   const url = sheetsUrl(
-    `values/${encodeURIComponent(`'${name}'!A:Q`)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+    `values/${encodeURIComponent(`'${name}'!A:W`)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
   );
   const response = await sheetsRequest(url, {
     method: "POST",

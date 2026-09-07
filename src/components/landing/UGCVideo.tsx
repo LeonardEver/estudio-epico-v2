@@ -1,10 +1,18 @@
 import { useRef, useState } from "react";
-import { Play } from "lucide-react";
+import { CheckCircle2, Play } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { CTAButton } from "./CTAButton";
+import { ScrollCTA } from "./ScrollCTA";
 
 // Edite aqui: caminho do vídeo real (arquivo na pasta public/).
 const VIDEO_SRC = "/ugc.mp4";
+
+// O que o visitante verá na VSL — reforça o clique no play.
+const takeaways = [
+  "O que é o Estúdio Épico",
+  "Como sua música é criada",
+  "Exemplos de situações reais",
+  "Como pedir a sua música",
+];
 
 export function UGCVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -19,13 +27,20 @@ export function UGCVideo() {
   };
 
   return (
-    <section className="relative border-y border-border bg-surface/40 py-16 sm:py-24">
+    <section id="vsl" className="relative border-y border-border bg-surface/40 py-16 sm:py-24">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 bg-primary/5 blur-3xl" />
-      <div className="mx-auto max-w-3xl px-5 text-center">
+      <div className="mx-auto max-w-4xl px-5 text-center">
         <Reveal>
-          <h2 className="text-3xl leading-tight font-bold sm:text-4xl">
-            Veja o que acontece quando uma ideia vira música.
+          <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
+            Veja na prática
+          </p>
+          <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-4xl">
+            Veja como uma ideia vira <span className="offer-gradient-text">música.</span>
           </h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
+            Do "eu queria ter uma música assim" até o resultado final. Aperte o play e entenda tudo
+            em um vídeo.
+          </p>
         </Reveal>
 
         <Reveal delay={0.05}>
@@ -61,9 +76,23 @@ export function UGCVideo() {
 
         <p className="mt-5 text-sm text-muted-foreground">Experiência real de um cliente</p>
 
+        <Reveal delay={0.05}>
+          <ul className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
+            {takeaways.map((item) => (
+              <li
+                key={item}
+                className="flex items-center gap-2.5 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-sm font-medium"
+              >
+                <CheckCircle2 className="size-4 shrink-0 text-accent" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+
         <Reveal delay={0.1}>
           <div className="mt-9">
-            <CTAButton />
+            <ScrollCTA target="como-funciona" label="VER COMO FUNCIONA" />
           </div>
         </Reveal>
       </div>

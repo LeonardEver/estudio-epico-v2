@@ -22,6 +22,18 @@ export type CreateOrderInput = {
   genre: string;
   genreOther: string;
   mood: string[];
+  /** Para quem é a música (ex.: "Alice"). */
+  recipient: string | undefined;
+  /** Qual é a ocasião (ex.: "Aniversário"). */
+  occasion: string | undefined;
+  /** Referências / observações opcionais. */
+  references: string | undefined;
+  /** Extras selecionados na página de pedido. */
+  extras: string[] | undefined;
+  /** Pacote completo selecionado. */
+  bundle: boolean | undefined;
+  /** Método de pagamento escolhido (PIX ou cartão). */
+  paymentMethod: string | undefined;
   utm?: Record<string, string>;
 };
 
@@ -77,6 +89,12 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         "PENDING",
         "", // download_url
         "", // notification_status
+        input.recipient ?? "",
+        input.occasion ?? "",
+        input.references ?? "",
+        (input.extras ?? []).join(" · "),
+        input.bundle ? "SIM" : "NÃO",
+        input.paymentMethod ?? "",
       ]);
     }
   } catch (error) {

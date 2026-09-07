@@ -8,33 +8,41 @@ import { Reveal } from "./Reveal";
 
 const faqs = [
   {
-    q: "Como funciona?",
-    a: "Você conta a sua ideia — estilo, clima, referência ou letra. A partir disso produzimos a música e enviamos o arquivo final.",
+    q: "Como envio minha ideia?",
+    a: "Na página de pedido, você conta sua história em um formulário rápido: para quem é, qual a ocasião e o que você imagina. Leva menos de 2 minutos.",
   },
   {
-    q: "Preciso saber produzir?",
-    a: "Não. A parte técnica é toda por nossa conta. Você só precisa da ideia.",
+    q: "Posso escolher o estilo da música?",
+    a: "Sim. Sertanejo, pop, pagode, funk, rock, eletrônica, MPB, gospel e mais. Você escolhe — ou descreve o clima e nós sugerimos.",
   },
   {
-    q: "Posso enviar uma referência?",
-    a: "Sim. Referências ajudam bastante a definir a direção da produção.",
+    q: "Quanto tempo demora?",
+    a: "Sua música é produzida com cuidado e entregue em poucos dias úteis. O prazo exato é informado junto com a confirmação do pedido.",
   },
-  { q: "Posso enviar minha própria letra?", a: "Sim, você pode enviar a sua letra." },
   {
-    q: "Posso escolher o gênero?",
-    a: "Sim. Você escolhe o gênero e o clima, ou descreve o que imagina e sugerimos a direção.",
+    q: "Como recebo minha música?",
+    a: "Você recebe o arquivo digital em alta qualidade, pronto para ouvir e compartilhar, no seu e-mail e WhatsApp.",
   },
-  { q: "Como recebo a música?", a: "Entrega digital. [DEFINIR: formato e canal de entrega]" },
-  { q: "Quanto tempo leva?", a: "[DEFINIR: prazo de entrega]" },
-  { q: "Posso pedir ajustes?", a: "[DEFINIR: política de ajustes / revisões]" },
+  {
+    q: "Posso usar minha música nas redes sociais?",
+    a: "Pode. A música é sua: poste no Instagram, TikTok, WhatsApp, YouTube — onde quiser.",
+  },
+  {
+    q: "Como funciona a página exclusiva?",
+    a: "É um extra opcional: uma página personalizada onde sua música fica disponível para tocar, com link para você compartilhar com quem quiser.",
+  },
+  {
+    q: "Como funciona o lançamento nas plataformas?",
+    a: "No pacote completo, sua música é lançada oficialmente no Spotify, YouTube Music, Apple Music e Deezer. Cuidamos de tudo para você.",
+  },
 ];
 
 export function FAQ() {
   return (
-    <section className="border-t border-border bg-surface/40 py-16 sm:py-24">
+    <section id="faq" className="border-t border-border py-16 sm:py-24">
       <div className="mx-auto max-w-3xl px-5">
         <Reveal>
-          <h2 className="text-3xl font-bold sm:text-5xl">Perguntas frequentes</h2>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">Perguntas frequentes</h2>
         </Reveal>
         <Reveal delay={0.05}>
           <Accordion type="single" collapsible className="mt-8">
