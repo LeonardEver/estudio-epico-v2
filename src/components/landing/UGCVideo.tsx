@@ -91,12 +91,18 @@ export function UGCVideo() {
 
         <Reveal delay={0.05}>
           <ul className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
+            {/*
+              Lista INFORMATIVA (o que o vídeo mostra) — não é clicável.
+              Subiu o contraste para não parecer apagada, mas de propósito sem
+              hover/cursor de botão: prometer clique num item inerte é pior do
+              que deixá-lo discreto.
+            */}
             {takeaways.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-2.5 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-sm font-medium"
+                className="flex items-center gap-2.5 rounded-xl border border-accent/25 bg-surface-2 px-4 py-3 text-sm font-semibold text-foreground"
               >
-                <CheckCircle2 className="size-4 shrink-0 text-accent" />
+                <CheckCircle2 className="size-4.5 shrink-0 text-accent" />
                 {item}
               </li>
             ))}

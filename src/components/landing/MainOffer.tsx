@@ -37,7 +37,15 @@ export function MainOffer() {
             className="mt-10 rounded-3xl border border-border bg-surface/80 p-7 text-left backdrop-blur sm:p-8"
             style={{ boxShadow: "var(--shadow-frame)" }}
           >
-            <div className="flex flex-wrap items-end justify-between gap-4">
+            {/*
+              Mobile: coluna única (preço → benefícios), cada um usando a
+              largura toda do card. Antes era uma linha só com `flex-1` nos
+              benefícios — como `flex: 1 1 0%` pode encolher até zero, o bloco
+              NUNCA quebrava linha: virava uma coluna espremida ao lado do
+              preço, com o texto quebrando em 5+ linhas e o card altíssimo.
+              A partir de `sm` (640px) o layout é exatamente o de antes.
+            */}
+            <div className="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
               <div>
                 <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                   Por apenas
@@ -49,7 +57,7 @@ export function MainOffer() {
                   Pagamento único · Sem assinatura
                 </p>
               </div>
-              <ul className="min-w-0 flex-1 space-y-2.5">
+              <ul className="min-w-0 space-y-2.5 sm:flex-1">
                 {included.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm sm:text-base">
                     <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15">

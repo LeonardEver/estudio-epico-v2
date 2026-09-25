@@ -5,15 +5,20 @@ import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 /**
- * CTA de NAVEGAÇÃO do funil: avança o visitante para a próxima seção.
+ * CTA de NAVEGAÇÃO do funil — o ÚNICO componente de navegação da Landing.
  *
- * NUNCA abre checkout nem dispara InitiateCheckout — a conversão acontece só
+ * NUNCA abre checkout nem dispara InitiateCheckout: a conversão acontece só
  * nos CTAs finais da oferta (CTAButton, no /pedido).
  *
- * `variant="primary"` existe para o topo da landing: mesma força visual do
- * botão de compra, mas ainda é navegação (por isso a seta para baixo).
- * `variant="outline"` é a navegação secundária — precisa parecer clicável,
- * nunca um botão desabilitado.
+ * Hierarquia visual da página:
+ *   1. CTAButton            → gradiente cheio + glow forte  (comprar)
+ *   2. ScrollCTA primary    → gradiente cheio              (topo do Hero)
+ *   3. ScrollCTA outline    → preenchimento tonal da marca + borda viva + glow
+ *   4. Info / accordions    → contraste alto, sem cara de botão
+ *
+ * O nível 3 antes usava `bg-surface` (quase igual ao fundo preto da página) e
+ * parecia desabilitado. Agora tem preenchimento na cor da marca, borda de
+ * acento em destaque e glow — clicável de relance, sem competir com a compra.
  */
 export function ScrollCTA({
   target,
@@ -33,6 +38,7 @@ export function ScrollCTA({
   size?: "lg" | "md";
 }) {
   const Arrow = arrow === "down" ? ArrowDown : ArrowRight;
+  const isNavigation = variant === "outline";
 
   return (
     <button
@@ -41,12 +47,13 @@ export function ScrollCTA({
         analytics.scrollCtaClick(target);
         document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
       }}
+      style={{ boxShadow: isNavigation ? "var(--shadow-nav)" : "var(--shadow-offer)" }}
       className={cn(
-        "group inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl font-display font-bold tracking-wide transition-transform duration-200 active:scale-[0.99] sm:w-auto",
+        "group inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl font-display font-bold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98] sm:w-auto",
         variant === "primary" &&
-          "bg-[image:var(--gradient-price)] text-primary-foreground shadow-[var(--shadow-offer)] hover:scale-[1.02]",
-        variant === "outline" &&
-          "border-2 border-accent/55 bg-surface text-foreground backdrop-blur transition-colors hover:border-accent hover:bg-accent/10 hover:text-accent",
+          "bg-[image:var(--gradient-price)] text-primary-foreground hover:scale-[1.02]",
+        isNavigation &&
+          "border-2 border-accent/70 bg-primary/60 text-foreground hover:-translate-y-0.5 hover:border-accent hover:bg-primary/75 active:translate-y-0",
         size === "lg" ? "min-h-14 px-8 text-base sm:text-lg" : "min-h-12 px-6 text-sm",
         className,
       )}
@@ -56,7 +63,6 @@ export function ScrollCTA({
         className={cn(
           "size-5 transition-transform duration-200",
           arrow === "down" ? "group-hover:translate-y-0.5" : "group-hover:translate-x-1",
-          variant === "outline" && "text-accent",
         )}
       />
     </button>

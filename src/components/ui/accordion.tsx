@@ -22,13 +22,16 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-center justify-between py-4 text-sm font-medium cursor-pointer transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
+        // Contraste subido para o gatilho não parecer texto apagado: o chevron
+        // fica sempre em acento, o hover muda a cor e o estado ABERTO é
+        // distinguível do fechado (cor + rotação da seta).
+        "flex flex-1 cursor-pointer items-center justify-between gap-3 py-4 text-left text-sm font-medium transition-colors hover:text-accent data-[state=open]:text-accent [&[data-state=open]>svg]:rotate-180",
         className,
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+      <ChevronDown className="h-5 w-5 shrink-0 text-accent transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

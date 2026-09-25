@@ -38,7 +38,11 @@ export function HeroOffer() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: 0.05 }}
-          className="mt-6 text-[2.3rem] leading-[1.06] font-extrabold tracking-tight sm:text-6xl lg:text-7xl"
+          /* A palavra "TRANSFORMAMOS" sozinha era mais larga que a tela em
+             320px e o `overflow-hidden` da seção cortava a letra inicial.
+             O clamp reduz só abaixo de ~390px (a partir daí continua 2.3rem,
+             e o `sm:` mantém o desktop exatamente como estava). */
+          className="mt-6 text-[clamp(1.7rem,9.4vw,2.3rem)] leading-[1.06] font-extrabold tracking-tight sm:text-6xl lg:text-7xl"
         >
           VOCÊ TEM UMA IDEIA.
           <br />

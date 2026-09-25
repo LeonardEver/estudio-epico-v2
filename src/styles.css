@@ -78,6 +78,9 @@
   --ring: oklch(0.552 0.166 12.5);
   --gradient-price: linear-gradient(135deg, var(--primary-glow), var(--primary));
   --shadow-offer: 0 24px 60px -20px oklch(0.552 0.166 12.5 / 45%);
+  /* Glow dos CTAs de NAVEGAÇÃO — mesmo tom da marca, presença menor que o
+     --shadow-offer dos CTAs de compra. */
+  --shadow-nav: 0 16px 38px -18px oklch(0.672 0.163 12.8 / 55%);
   --shadow-frame: 0 40px 90px -30px oklch(0 0 0 / 85%);
 }
 
