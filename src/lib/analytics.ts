@@ -3,8 +3,9 @@
  *
  * The pixel ID is public by design (injected via VITE_META_PIXEL_ID) and the
  * helper is a no-op when the pixel is not configured or not yet loaded.
- * Purchase is NEVER fired from the frontend — payment confirmation comes
- * exclusively from the Kiwify webhook.
+ * Purchase is fired ONLY after the gateway itself confirms payment (status
+ * "paid" verificado no servidor via API da Cakto) — nunca por suposição do
+ * navegador; o webhook continua sendo a fonte de verdade para planilha/e-mail.
  */
 
 declare global {
@@ -54,13 +55,35 @@ export const analytics = {
   briefingOpened(): void {
     track("Briefing_Opened");
   },
+  /**
+   * Fired when the secondary WhatsApp route is clicked. Evento PRÓPRIO e
+   * adicional — não altera nenhum evento existente do funil.
+   */
+  whatsappClick(): void {
+    track("WhatsApp_Click");
+  },
+  /**
+   * Cupom: eventos próprios da campanha, separados dos eventos de funil.
+   * Registram comportamento apenas — nunca CPF, e-mail, telefone ou nome.
+   */
+  couponViewed(): void {
+    track("Coupon_Viewed");
+  },
+  /** Disparado quando o cliente aplica um código de cupom válido. */
+  couponApplied(): void {
+    track("Coupon_Applied");
+  },
   /** Fired when a briefing is successfully submitted (order persisted). */
   briefSubmitted(orderId: string): void {
     track("Lead", { order_id: orderId });
   },
-  /** Fired right before redirecting to the Kiwify checkout. */
-  checkoutRedirect(orderId: string): void {
+  /** Fired when the in-app payment starts (PIX gerado / cartão enviado). */
+  checkoutStarted(orderId: string): void {
     track("InitiateCheckout", { order_id: orderId });
+  },
+  /** Fired only after the gateway confirms payment (server-verified status). */
+  purchaseConfirmed(orderId: string): void {
+    track("Purchase", { order_id: orderId });
   },
   /** Fired when the order page (pagina de pedido) is viewed. */
   viewOrderPage(): void {

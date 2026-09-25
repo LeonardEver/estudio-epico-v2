@@ -1,10 +1,17 @@
 "use client";
 
-import { Check, Globe, Palette, Star } from "lucide-react";
+import { useState } from "react";
+import { Check, ChevronDown, Flame, Globe, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BUNDLE_ANCHOR, BUNDLE_PRICE } from "@/components/landing/offer";
+import {
+  BUNDLE_ANCHOR,
+  BUNDLE_PRICE,
+  BUNDLE_SAVINGS,
+  DISTRIBUTION_PLATFORMS,
+} from "@/components/landing/offer";
+import { PlatformLogos } from "@/components/landing/PlatformLogos";
 import type { Extra, OrderFormValues } from "@/lib/brief";
-import { formatBRL } from "./order-state";
+import { CoverPreview, ExclusivePagePreview } from "./ExtraPreviews";
 
 type ExtrasStepProps = {
   values: OrderFormValues;
@@ -24,7 +31,7 @@ const EXTRAS_CONFIG: {
     id: "COVER",
     icon: Palette,
     emoji: "🎨",
-    name: "Capa Personalizada",
+    name: "Capa personalizada",
     price: "+R$19,90",
     description: "Uma arte exclusiva para acompanhar sua música.",
   },
@@ -32,14 +39,25 @@ const EXTRAS_CONFIG: {
     id: "EXCLUSIVE_PAGE",
     icon: Globe,
     emoji: "🌐",
-    name: "Página Exclusiva",
+    name: "Página exclusiva",
     price: "+R$59,90",
     description: "Uma página personalizada para ouvir e compartilhar sua música.",
   },
 ];
 
+/** O que o Pacote Completo entrega — exatamente os itens reais da oferta. */
+const BUNDLE_BENEFITS = [
+  "Sua música criada especialmente para você",
+  "Capa profissional para o lançamento",
+  "Página exclusiva para ouvir e compartilhar",
+  "Distribuição nas principais plataformas digitais",
+  "Tudo em um único pedido",
+];
+
 export function ExtrasStep({ values, onToggleExtra, onToggleBundle }: ExtrasStepProps) {
   const { extras, bundle } = values;
+  /** Qual prévia está aberta — uma por vez (accordion). */
+  const [openPreview, setOpenPreview] = useState<Extra | null>(null);
 
   return (
     <div className="space-y-8">
@@ -56,57 +74,113 @@ export function ExtrasStep({ values, onToggleExtra, onToggleBundle }: ExtrasStep
           {EXTRAS_CONFIG.map((extra) => {
             const selected = extras.includes(extra.id);
             const includedInBundle = bundle;
+            const previewOpen = openPreview === extra.id;
             return (
-              <li key={extra.id}>
-                <button
-                  type="button"
-                  role="checkbox"
-                  aria-checked={selected || includedInBundle}
-                  disabled={includedInBundle}
-                  onClick={() => onToggleExtra(extra.id)}
-                  className={cn(
-                    "flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition-colors",
-                    includedInBundle
-                      ? "cursor-default border-primary/40 bg-primary/5"
-                      : "cursor-pointer border-border bg-background hover:border-input",
-                    selected && !includedInBundle && "border-primary/60 bg-primary/5",
-                  )}
-                >
-                  <span
-                    aria-hidden
-                    className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-lg"
-                  >
-                    {extra.emoji}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-display text-base font-bold">{extra.name}</span>
-                      <span className="offer-gradient-text text-sm font-extrabold">
-                        {extra.price}
-                      </span>
-                      {includedInBundle && (
-                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-accent uppercase">
-                          Incluído no pacote
-                        </span>
-                      )}
-                    </span>
-                    <span className="mt-0.5 block text-sm text-muted-foreground">
-                      {extra.description}
-                    </span>
-                  </span>
-                  {/* Controle Adicionar */}
-                  <span
-                    aria-hidden
+              <li
+                key={extra.id}
+                className={cn(
+                  "overflow-hidden rounded-2xl border transition-colors",
+                  includedInBundle
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-border bg-background",
+                  selected && !includedInBundle && "border-primary/60 bg-primary/5",
+                )}
+              >
+                <div className="flex items-stretch">
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={selected || includedInBundle}
+                    disabled={includedInBundle}
+                    onClick={() => onToggleExtra(extra.id)}
                     className={cn(
-                      "flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors",
-                      selected || includedInBundle
-                        ? "justify-end border-transparent bg-[image:var(--gradient-price)]"
-                        : "justify-start border-input bg-surface",
+                      "flex min-w-0 flex-1 items-center gap-4 px-4 py-4 text-left",
+                      includedInBundle ? "cursor-default" : "cursor-pointer",
                     )}
                   >
-                    <span className="m-0.5 size-4.5 rounded-full bg-primary-foreground shadow" />
-                  </span>
-                </button>
+                    <span
+                      aria-hidden
+                      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-lg"
+                    >
+                      {extra.emoji}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="font-display text-base font-bold">{extra.name}</span>
+                        <span className="offer-gradient-text text-sm font-extrabold">
+                          {extra.price}
+                        </span>
+                        {includedInBundle && (
+                          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-accent uppercase">
+                            Incluído no pacote
+                          </span>
+                        )}
+                      </span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground">
+                        {extra.description}
+                      </span>
+                    </span>
+                    {/* Controle Adicionar */}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors",
+                        selected || includedInBundle
+                          ? "justify-end border-transparent bg-[image:var(--gradient-price)]"
+                          : "justify-start border-input bg-surface",
+                      )}
+                    >
+                      <span className="m-0.5 size-4.5 rounded-full bg-primary-foreground shadow" />
+                    </span>
+                  </button>
+
+                  {/*
+                    Seta separada do toggle: o botão acima liga/desliga o extra,
+                    esta só abre a prévia. Botões aninhados seriam HTML inválido,
+                    por isso os dois são irmãos dentro do card.
+                  */}
+                  <button
+                    type="button"
+                    onClick={() => setOpenPreview(previewOpen ? null : extra.id)}
+                    aria-expanded={previewOpen}
+                    aria-controls={`preview-${extra.id}`}
+                    aria-label={`${previewOpen ? "Fechar" : "Ver"} prévia: ${extra.name}`}
+                    className="flex w-12 shrink-0 cursor-pointer items-center justify-center border-l border-border text-muted-foreground transition-colors hover:bg-surface hover:text-accent"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "size-5 transition-transform duration-300",
+                        previewOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+                </div>
+
+                {/* Prévia inline — accordion animado, sem modal. */}
+                <div
+                  id={`preview-${extra.id}`}
+                  inert={!previewOpen}
+                  className={cn(
+                    "grid transition-[grid-template-rows] duration-300 ease-out",
+                    previewOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div className="border-t border-border px-4 py-5 sm:px-5">
+                      {extra.id === "COVER" ? (
+                        <CoverPreview
+                          selected={selected || includedInBundle}
+                          onAdd={() => onToggleExtra(extra.id)}
+                        />
+                      ) : (
+                        <ExclusivePagePreview
+                          selected={selected || includedInBundle}
+                          onAdd={() => onToggleExtra(extra.id)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
               </li>
             );
           })}
@@ -122,27 +196,62 @@ export function ExtrasStep({ values, onToggleExtra, onToggleBundle }: ExtrasStep
       >
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-72 rounded-full bg-primary/15 blur-3xl" />
         <div className="relative">
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.18em] text-accent uppercase">
-            <Star className="size-4" /> Quer levar tudo?
-          </p>
-          <h3 className="mt-2 font-display text-xl leading-tight font-extrabold sm:text-2xl">
-            Música + Capa + Página + Lançamento nas plataformas
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sua música pronta, com capa, página exclusiva e disponível no Spotify, YouTube Music,
-            Apple Music e Deezer.
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.18em] text-accent uppercase">
+                <Flame className="size-4" /> Pacote completo
+              </p>
+              <h3 className="mt-2 font-display text-2xl leading-tight font-extrabold sm:text-3xl">
+                EM TODA A <span className="offer-gradient-text">INTERNET.</span>
+              </h3>
+              <p className="mt-2 text-sm font-medium text-muted-foreground">
+                {DISTRIBUTION_PLATFORMS.join(" • ")} e muito mais
+              </p>
+            </div>
+
+            {/*
+              Logos reais no canto superior direito (no mobile caem para baixo
+              do título, em bloco compacto, sem empurrar a headline).
+            */}
+            <PlatformLogos className="w-full shrink-0 sm:max-w-[250px] lg:max-w-[280px]" />
+          </div>
+
+          <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+            Leve sua música para as principais plataformas digitais e tenha um lançamento pronto
+            para ser compartilhado, ouvido e descoberto pelo seu público.
           </p>
 
-          <div className="mt-4 flex flex-wrap items-baseline gap-3">
-            <span className="text-lg text-muted-foreground line-through decoration-primary/70 decoration-2">
-              {BUNDLE_ANCHOR}
-            </span>
-            <span className="offer-gradient-text font-display text-4xl font-extrabold sm:text-5xl">
-              {BUNDLE_PRICE}
-            </span>
-            <span className="rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-bold tracking-wide text-accent uppercase">
-              Economize R$77
-            </span>
+          <p className="mt-5 text-[11px] font-semibold tracking-[0.18em] text-accent uppercase">
+            Você recebe:
+          </p>
+          <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
+            {BUNDLE_BENEFITS.map((label) => (
+              <li key={label} className="flex items-center gap-2.5 text-sm">
+                <Check className="size-4 shrink-0 text-accent" />
+                {label}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6">
+            <p className="text-base text-muted-foreground">
+              <span className="text-[11px] font-semibold tracking-[0.2em] uppercase">De </span>
+              <span className="font-medium line-through decoration-primary/60 decoration-2">
+                {BUNDLE_ANCHOR}
+              </span>
+            </p>
+            <p className="mt-1 flex flex-wrap items-baseline gap-x-2.5">
+              <span className="text-[11px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+                Por
+              </span>
+              <span className="offer-gradient-text font-display text-5xl leading-none font-extrabold sm:text-6xl">
+                {BUNDLE_PRICE}
+              </span>
+            </p>
+            <p className="mt-3 inline-flex rounded-full bg-primary/15 px-4 py-1.5 font-display text-sm font-extrabold tracking-wide text-accent uppercase">
+              Você economiza {BUNDLE_SAVINGS}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">Pagamento único · Sem assinatura</p>
           </div>
 
           <button
@@ -160,10 +269,13 @@ export function ExtrasStep({ values, onToggleExtra, onToggleBundle }: ExtrasStep
             {bundle ? (
               <>
                 <Check className="size-5" />
-                PACOTE SELECIONADO — {formatBRL(479)}
+                PACOTE SELECIONADO — {BUNDLE_PRICE}
               </>
             ) : (
-              "QUERO O PACOTE COMPLETO"
+              <>
+                QUERO LANÇAR MINHA MÚSICA
+                <span aria-hidden>→</span>
+              </>
             )}
           </button>
         </div>

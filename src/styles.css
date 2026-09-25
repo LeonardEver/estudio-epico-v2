@@ -81,7 +81,6 @@
   --shadow-frame: 0 40px 90px -30px oklch(0 0 0 / 85%);
 }
 
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -112,4 +111,3 @@
   background-clip: text;
   color: transparent;
 }
-

@@ -13,8 +13,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { env } from "./env";
 import { normalizeKiwifyWebhook, productMatches } from "./kiwify";
-import { readOrderRows, updateOrderRow, type OrderRow } from "./google-sheets";
-import { sendOwnerOrderEmail, type OrderForEmail } from "./email";
+import { readOrderRows, type OrderRow } from "./google-sheets";
+import { markOrderPaid, markOrderRefunded, markOrderRefused } from "./orders";
 
 const MAX_BODY_BYTES = 1_000_000;
 
@@ -63,36 +63,6 @@ export function findOrderForWebhook(
     if (candidates.length > 0) return candidates[candidates.length - 1]; // last appended = newest
   }
   return undefined;
-}
-
-function rowToEmailOrder(row: OrderRow, txId: string | undefined): OrderForEmail {
-  const [
-    orderId = "",
-    createdAt = "",
-    name = "",
-    email = "",
-    whatsapp = "",
-    lyricsPreference = "",
-    lyrics = "",
-    description = "",
-    genre = "",
-    genreOther = "",
-    mood = "",
-  ] = row.values;
-  return {
-    orderId,
-    createdAt,
-    name,
-    email,
-    whatsapp,
-    lyricsPreference,
-    lyrics,
-    description,
-    genre,
-    genreOther,
-    mood: mood ? mood.split(" · ") : [],
-    txId,
-  };
 }
 
 export async function handleKiwifyWebhook(request: Request): Promise<Response> {
@@ -151,52 +121,28 @@ export async function handleKiwifyWebhook(request: Request): Promise<Response> {
     return json({ ok: true, ignored: "order_not_found" });
   }
 
-  const currentStatus = order.values[11] ?? ""; // L = payment_status
-  const notificationStatus = order.values[16] ?? ""; // Q = notification_status
-
   try {
     switch (event.kind) {
       case "approved": {
-        // Idempotency: already PAID and notified → nothing to do.
-        if (currentStatus === "PAID" && notificationStatus === "SENT") {
-          return json({ ok: true, duplicate: true, orderId: order.orderId });
-        }
-
-        const txId = event.txId ?? "";
-        const paidAt = new Date().toISOString();
-        await updateOrderRow(order.rowNumber, [
-          { column: "L", value: "PAID" },
-          { column: "M", value: txId },
-          { column: "N", value: paidAt },
-        ]);
-
-        // Email failure must NEVER affect payment status.
-        try {
-          await sendOwnerOrderEmail(rowToEmailOrder(order, txId));
-          await updateOrderRow(order.rowNumber, [{ column: "Q", value: "SENT" }]);
-        } catch (emailError) {
-          console.error(
-            `[kiwify-webhook] Owner email failed for order ${order.orderId} — will retry on next webhook delivery:`,
-            emailError,
-          );
-          await updateOrderRow(order.rowNumber, [{ column: "Q", value: "FAILED" }]);
-        }
-        return json({ ok: true, orderId: order.orderId, status: "PAID" });
+        // Idempotency lives in markOrderPaid (PAID + notified → no-op).
+        const result = await markOrderPaid(order.orderId, event.txId ?? "");
+        return json({
+          ok: true,
+          orderId: order.orderId,
+          status: "PAID",
+          duplicate: result === "duplicate",
+        });
       }
 
       case "refused": {
-        if (currentStatus === "AWAITING_PAYMENT") {
-          await updateOrderRow(order.rowNumber, [{ column: "L", value: "REFUSED" }]);
-        }
+        await markOrderRefused(order.orderId);
         return json({ ok: true, orderId: order.orderId, status: "REFUSED" });
       }
 
       case "refunded":
       case "chargedback": {
         // Don't delete anything — flag it so the owner knows not to produce/deliver.
-        if (currentStatus === "PAID") {
-          await updateOrderRow(order.rowNumber, [{ column: "L", value: "REFUNDED" }]);
-        }
+        await markOrderRefunded(order.orderId);
         return json({ ok: true, orderId: order.orderId, status: "REFUNDED" });
       }
     }

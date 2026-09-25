@@ -106,12 +106,10 @@ export function AudioShowcase() {
             Resultados reais
           </p>
           <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-5xl">
-            Toda música começa com uma ideia.{" "}
-            <span className="offer-gradient-text">Ouça o resultado.</span>
+            OUÇA O <span className="offer-gradient-text">RESULTADO.</span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Cada uma dessas músicas foi criada do zero a partir do pedido de um cliente — um
-            presente, um jingle, uma homenagem. Aperte o play:
+            Essas são músicas produzidas a partir das histórias e ideias dos nossos clientes.
           </p>
         </Reveal>
 
@@ -169,7 +167,7 @@ export function AudioShowcase() {
 
         <Reveal delay={0.1}>
           <div className="mt-8">
-            <ScrollCTA target="oferta" label="VER A OFERTA" />
+            <ScrollCTA target="como-funciona" label="VER COMO FUNCIONA" />
           </div>
         </Reveal>
       </div>

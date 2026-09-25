@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { MetaPixelScript } from "../components/MetaPixelScript";
+import { ClarityScript } from "../components/ClarityScript";
 
 function NotFoundComponent() {
   return (
@@ -117,6 +118,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         {children}
         <MetaPixelScript />
+        <ClarityScript />
         <Scripts />
       </body>
     </html>

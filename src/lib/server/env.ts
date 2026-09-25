@@ -12,9 +12,12 @@
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 
-/** Variables required to CREATE an order (briefing → Sheets → checkout URL). */
+/** Variables required to CREATE an order (briefing → Sheets → Cakto charge). */
 const ORDER_REQUIRED_VARS = [
-  "KIWIFY_CHECKOUT_URL",
+  "CAKTO_CLIENT_ID",
+  "CAKTO_CLIENT_SECRET",
+  "CAKTO_OFFER_ID_BASE",
+  "CAKTO_OFFER_ID_BUNDLE",
   "GOOGLE_SPREADSHEET_ID",
   "GOOGLE_SERVICE_ACCOUNT_EMAIL",
   "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY",

@@ -65,7 +65,7 @@ export function buildOwnerEmailHtml(order: OrderForEmail): string {
       cell("Order ID", order.orderId) +
         cell("Data", date) +
         cell("Status pagamento", "PAID") +
-        cell("Transação Kiwify", order.txId ?? ""),
+        cell("Transação Cakto", order.txId ?? ""),
     )}
     ${section(
       "Cliente",

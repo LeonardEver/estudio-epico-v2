@@ -2,6 +2,7 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 import { handleKiwifyWebhook } from "./lib/server/kiwify-webhook";
+import { handleCaktoWebhook } from "./lib/server/cakto-webhook";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -18,12 +19,21 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
-// Kiwify payment webhook — a plain HTTP route handled before the router.
-// Runs on every request in dev and prod (part of the app's fetch pipeline),
-// so no extra server wiring is needed.
+// Kiwify payment webhook — kept for in-flight/legacy orders during the
+// transition to Cakto; the current funnel no longer creates Kiwify checkouts.
 const kiwifyWebhookMiddleware = createMiddleware().server(async ({ request, pathname, next }) => {
   if (pathname === "/api/kiwify/webhook" && request.method === "POST") {
     return handleKiwifyWebhook(request);
+  }
+  return next();
+});
+
+// Cakto payment webhook — plain HTTP route handled before the router (same
+// pattern as the Kiwify one above). Configure the URL in the Cakto dashboard:
+//   https://SEU-DOMINIO/api/cakto/webhook
+const caktoWebhookMiddleware = createMiddleware().server(async ({ request, pathname, next }) => {
+  if (pathname === "/api/cakto/webhook" && request.method === "POST") {
+    return handleCaktoWebhook(request);
   }
   return next();
 });
@@ -37,5 +47,10 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware, kiwifyWebhookMiddleware, csrfMiddleware],
+  requestMiddleware: [
+    errorMiddleware,
+    kiwifyWebhookMiddleware,
+    caktoWebhookMiddleware,
+    csrfMiddleware,
+  ],
 }));

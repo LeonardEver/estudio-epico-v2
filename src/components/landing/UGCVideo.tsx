@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CheckCircle2, Play } from "lucide-react";
+import { CheckCircle2, Play, Quote } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { ScrollCTA } from "./ScrollCTA";
 
@@ -32,14 +32,13 @@ export function UGCVideo() {
       <div className="mx-auto max-w-4xl px-5 text-center">
         <Reveal>
           <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
-            Veja na prática
+            Prova real
           </p>
           <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-4xl">
-            Veja como uma ideia vira <span className="offer-gradient-text">música.</span>
+            UMA IDEIA PODE VIRAR UMA <span className="offer-gradient-text">MÚSICA.</span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Do "eu queria ter uma música assim" até o resultado final. Aperte o play e entenda tudo
-            em um vídeo.
+            Aperte o play e veja o que acontece entre o briefing e a música pronta.
           </p>
         </Reveal>
 
@@ -74,7 +73,21 @@ export function UGCVideo() {
           </div>
         </Reveal>
 
-        <p className="mt-5 text-sm text-muted-foreground">Experiência real de um cliente</p>
+        {/* Legenda no formato de post — o vídeo precisa ler como prova, não como banner. */}
+        <div className="mx-auto mt-4 flex max-w-[380px] items-start gap-3 rounded-2xl border border-border bg-surface/70 px-4 py-3 text-left backdrop-blur">
+          <span
+            aria-hidden
+            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15"
+          >
+            <Quote className="size-3.5 text-accent" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">Experiência real de um cliente</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Do pedido à música pronta, sem cortes.
+            </p>
+          </div>
+        </div>
 
         <Reveal delay={0.05}>
           <ul className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
@@ -92,7 +105,7 @@ export function UGCVideo() {
 
         <Reveal delay={0.1}>
           <div className="mt-9">
-            <ScrollCTA target="como-funciona" label="VER COMO FUNCIONA" />
+            <ScrollCTA target="exemplos" label="OUÇA O RESULTADO" />
           </div>
         </Reveal>
       </div>

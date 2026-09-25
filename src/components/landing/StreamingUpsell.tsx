@@ -4,14 +4,8 @@ import { useState } from "react";
 import { ArrowDown, ArrowRight, Rocket, Sparkles } from "lucide-react";
 import { analytics } from "@/lib/analytics";
 import { getStreamingCheckoutUrl } from "@/lib/streaming-checkout";
-import { STREAMING_ANCHOR, STREAMING_PRICE } from "./offer";
-
-const platforms = [
-  { name: "Spotify", color: "#1DB954" },
-  { name: "YouTube Music", color: "#FF0000" },
-  { name: "Apple Music", color: "#FA2C56" },
-  { name: "Deezer", color: "#A238FF" },
-];
+import { PlatformLogos } from "./PlatformLogos";
+import { STREAMING_PRICE } from "./offer";
 
 /**
  * Upsell pós-compra do lançamento nas plataformas de streaming.
@@ -49,46 +43,32 @@ export function StreamingUpsell({ onDecline }: { onDecline: () => void }) {
         </p>
 
         <h1 className="mt-6 text-3xl leading-tight font-extrabold sm:text-5xl">
-          QUER SUA MÚSICA NAS PLATAFORMAS <span className="offer-gradient-text">MAIS FAMOSAS?</span>
+          <span aria-hidden>🚀</span> LANCE SUA MÚSICA NAS{" "}
+          <span className="offer-gradient-text">PLATAFORMAS DIGITAIS</span>
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Leve sua música além do WhatsApp e tenha um lançamento nas principais plataformas de
-          streaming.
+          Coloque sua música nas principais plataformas digitais com o nosso suporte em todo o
+          processo de lançamento.
         </p>
 
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
-          {platforms.map((platform) => (
-            <span
-              key={platform.name}
-              className="flex items-center gap-2 rounded-full border border-border bg-surface-2/70 px-4 py-2 text-sm font-semibold"
-            >
-              <span
-                aria-hidden
-                className="size-2.5 rounded-full"
-                style={{ backgroundColor: platform.color }}
-              />
-              {platform.name}
-            </span>
-          ))}
-        </div>
+        {/* Logos reais, mesma fonte do card do Pacote Completo. */}
+        <PlatformLogos layout="row" className="mt-7 justify-center" />
 
         <div
           className="mt-9 rounded-3xl border border-border bg-surface/80 p-8 backdrop-blur"
           style={{ boxShadow: "var(--shadow-frame)" }}
         >
           <p className="flex items-center justify-center gap-1.5 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-            <Rocket className="size-4 text-accent" /> Lançamento oficial da sua música
+            <Rocket className="size-4 text-accent" /> Lançamento nas plataformas
           </p>
           <div className="mt-4 flex items-baseline justify-center gap-3">
-            <span className="text-xl text-muted-foreground line-through decoration-primary/70 decoration-2">
-              {STREAMING_ANCHOR}
-            </span>
             <span className="offer-gradient-text font-display text-6xl leading-none font-extrabold sm:text-7xl">
               {STREAMING_PRICE}
             </span>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Economize R$100 — oferta válida somente agora, junto com o seu pedido.
+            Serviço de lançamento, com suporte no processo. Oferta válida somente agora, junto com o
+            seu pedido.
           </p>
 
           <button

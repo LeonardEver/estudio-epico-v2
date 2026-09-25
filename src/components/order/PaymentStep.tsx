@@ -1,16 +1,42 @@
 "use client";
 
+import { useState } from "react";
 import { CreditCard, Loader2, Lock, QrCode, ShieldCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { CPF_ERROR_MESSAGE, formatCpf, isValidCpf } from "@/lib/cpf";
 import type { PaymentMethod } from "@/lib/brief";
-import { PaymentCardPanel, PaymentPixPanel, PAYMENT_GATEWAY_INTEGRATED } from "./payment-panels";
+import { CouponCard } from "./CouponCard";
+import {
+  PaymentCardPanel,
+  PaymentPixPanel,
+  type CardPayPayload,
+  type CardPayResult,
+  type PixChargeView,
+} from "./payment-panels";
 
 type PaymentStepProps = {
   paymentMethod: PaymentMethod;
   onSelectMethod: (method: PaymentMethod) => void;
-  onSubmit: () => void;
-  submitting: boolean;
+  /** Total do pedido (para o seletor de parcelas). */
+  total: number;
+  /** CPF do titular — um único campo serve PIX e cartão (não pedimos duas vezes). */
+  cpf: string;
+  onCpfChange: (value: string) => void;
+  /** Cupom digitado (estado do wizard). */
+  coupon: string;
+  onCouponChange: (value: string) => void;
+  /** Cobrança PIX ativa (null enquanto o cliente ainda não gerou). */
+  pixCharge: PixChargeView | null;
+  /** Gerando o PIX na Cakto. */
+  charging: boolean;
   submitError: string | null;
+  onStartPix: () => void;
+  onPixPaid: (orderId: string) => void;
+  /** Gera um novo PIX após expiração/falha. */
+  onRetryPix: () => void;
+  /** Submete o cartão tokenizado pelo SDK (nunca os dados brutos). */
+  onPayCard: (payload: CardPayPayload) => Promise<CardPayResult>;
 };
 
 const METHODS: {
@@ -27,18 +53,43 @@ const METHODS: {
 export function PaymentStep({
   paymentMethod,
   onSelectMethod,
-  onSubmit,
-  submitting,
+  total,
+  cpf,
+  onCpfChange,
+  coupon,
+  onCouponChange,
+  pixCharge,
+  charging,
   submitError,
+  onStartPix,
+  onPixPaid,
+  onRetryPix,
+  onPayCard,
 }: PaymentStepProps) {
+  // O CPF é validado aqui para dar retorno imediato no campo; o servidor
+  // revalida antes de qualquer cobrança (nunca confiamos só no navegador).
+  const [cpfError, setCpfError] = useState<string | null>(null);
+
+  const handleStartPix = () => {
+    if (!isValidCpf(cpf)) {
+      setCpfError(CPF_ERROR_MESSAGE);
+      return;
+    }
+    setCpfError(null);
+    onStartPix();
+  };
+
   return (
     <div className="space-y-7">
+      {/* Campanha de boas-vindas: só aqui, depois do briefing preenchido. */}
+      <CouponCard total={total} value={coupon} onChange={onCouponChange} />
+
       <div>
         <h2 className="font-display text-2xl leading-tight font-bold sm:text-3xl">
           Como você quer <span className="offer-gradient-text">pagar?</span>
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Você conclui o pagamento no checkout seguro — leva menos de 1 minuto.
+          Pague direto aqui, com segurança — sem sair da página.
         </p>
 
         {/* Métodos de pagamento */}
@@ -78,10 +129,72 @@ export function PaymentStep({
           })}
         </div>
 
-        {/* Painel do método selecionado — montado quando o gateway integrado existir */}
-        {PAYMENT_GATEWAY_INTEGRATED && (
+        {/* Painel do método selecionado */}
+        {paymentMethod === "PIX" && (
           <div className="mt-5 rounded-2xl border border-border bg-surface/60 p-5">
-            {paymentMethod === "PIX" ? <PaymentPixPanel /> : <PaymentCardPanel />}
+            {pixCharge ? (
+              <PaymentPixPanel pix={pixCharge} onPaid={onPixPaid} onExpired={onRetryPix} />
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="pix-cpf" className="mb-1.5 block text-sm font-medium">
+                    CPF
+                  </label>
+                  <Input
+                    id="pix-cpf"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="000.000.000-00"
+                    value={cpf}
+                    onChange={(e) => {
+                      onCpfChange(formatCpf(e.target.value));
+                      setCpfError(null);
+                    }}
+                    aria-invalid={Boolean(cpfError)}
+                    aria-describedby={cpfError ? "pix-cpf-error" : undefined}
+                    className="h-12 rounded-xl bg-background"
+                  />
+                  {cpfError && (
+                    <p
+                      id="pix-cpf-error"
+                      role="alert"
+                      className="mt-1.5 text-xs font-medium text-destructive"
+                    >
+                      {cpfError}
+                    </p>
+                  )}
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    O CPF do titular é exigido para emitir a cobrança.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleStartPix}
+                  disabled={charging}
+                  className="group inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-price)] font-display text-base font-bold tracking-wide text-primary-foreground transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 sm:text-lg"
+                  style={{ boxShadow: "var(--shadow-offer)" }}
+                >
+                  {charging ? (
+                    <>
+                      <Loader2 className="size-5 animate-spin" />
+                      Gerando seu PIX...
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="size-5" />
+                      GERAR PIX AGORA
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {paymentMethod === "CARD" && (
+          <div className="mt-5 rounded-2xl border border-border bg-surface/60 p-5">
+            <PaymentCardPanel total={total} cpf={cpf} onCpfChange={onCpfChange} onPay={onPayCard} />
           </div>
         )}
       </div>
@@ -96,34 +209,9 @@ export function PaymentStep({
       )}
 
       <div>
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={submitting}
-          className="group inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-price)] font-display text-base font-bold tracking-wide text-primary-foreground transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 sm:text-lg"
-          style={{ boxShadow: "var(--shadow-offer)" }}
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="size-5 animate-spin" />
-              Preparando seu pedido...
-            </>
-          ) : (
-            <>
-              FINALIZAR PEDIDO
-              <span
-                aria-hidden
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              >
-                →
-              </span>
-            </>
-          )}
-        </button>
-
-        <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <li className="flex items-center gap-1.5">
-            <Lock className="size-3.5 text-accent" /> Checkout seguro
+            <Lock className="size-3.5 text-accent" /> Pagamento 100% seguro
           </li>
           <li className="flex items-center gap-1.5">
             <ShieldCheck className="size-3.5 text-accent" /> Pagamento único

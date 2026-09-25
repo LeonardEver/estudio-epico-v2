@@ -1,56 +1,10 @@
 /**
- * Kiwify integration helpers.
+ * Kiwify webhook payload normalization (legacy — the funnel now charges via
+ * Cakto, but this route stays live for in-flight/legacy Kiwify orders).
  *
- * Checkout prefill uses only the parameters officially documented by Kiwify:
- * `name`, `email`, `phone` (+ `src` for tracking). See:
- * https://ajuda.kiwify.com.br/pt-br/article/como-preencher-os-campos-do-checkout-pela-url-de7ezo/
- *
- * Webhook payloads are parsed defensively: Kiwify does not publish a stable
- * schema, so several field aliases observed in the wild are accepted.
+ * Kiwify does not publish a stable schema, so several field aliases observed
+ * in the wild are accepted.
  */
-import { requireEnv } from "./env";
-
-export type CheckoutInput = {
-  orderId: string;
-  name: string;
-  email: string;
-  whatsapp?: string | undefined;
-  utm?: Record<string, string> | undefined;
-};
-
-export function buildKiwifyCheckoutUrl(input: CheckoutInput): string {
-  const url = new URL(requireEnv("KIWIFY_CHECKOUT_URL"));
-
-  // Customer prefill (documented parameters only).
-  url.searchParams.set("name", input.name);
-  url.searchParams.set("email", input.email);
-  const phone = normalizePhone(input.whatsapp);
-  if (phone) url.searchParams.set("phone", phone);
-
-  // Order identity: `src` is Kiwify's documented tracking parameter. The webhook
-  // echoes it back when the checkout preserves it — the primary correlation key.
-  url.searchParams.set("src", input.orderId);
-
-  // Preserve the visitor's own tracking parameters (UTM etc.).
-  for (const [key, value] of Object.entries(input.utm ?? {})) {
-    if (!value || key === "src") continue; // src is reserved for order identity
-    url.searchParams.set(key, value.slice(0, 200));
-  }
-
-  return url.toString();
-}
-
-/** Normalizes a Brazilian-style WhatsApp number to E.164-ish digits ("5511999999999"). */
-export function normalizePhone(raw?: string): string | undefined {
-  const digits = (raw ?? "").replace(/\D/g, "");
-  if (digits.length >= 12 && digits.length <= 13) return digits; // already has country code
-  if (digits.length >= 10 && digits.length <= 11) return `55${digits}`;
-  return undefined;
-}
-
-// ---------------------------------------------------------------------------
-// Webhook payload normalization
-// ---------------------------------------------------------------------------
 
 export type WebhookEvent =
   | {

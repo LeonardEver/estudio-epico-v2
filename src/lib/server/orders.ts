@@ -1,12 +1,12 @@
 /**
- * Order creation: persist the briefing to Google Sheets and build the Kiwify
- * checkout URL. If anything fails here the client MUST NOT be redirected to
- * payment — the error is thrown and the checkout never happens.
+ * Order book: persist the briefing to Google Sheets and manage payment status
+ * transitions. Charging itself lives in ./cakto — if anything fails before a
+ * charge is created the client MUST NOT be sent to payment.
  */
-import { buildKiwifyCheckoutUrl, type CheckoutInput } from "./kiwify";
-import { appendOrderRow, readOrderRows } from "./google-sheets";
+import { appendOrderRow, readOrderRows, updateOrderRow, type OrderRow } from "./google-sheets";
 import { generateOrderId } from "./order-id";
 import { missingOrderEnvVars } from "./env";
+import { sendOwnerOrderEmail, type OrderForEmail } from "./email";
 
 /** Safe message shown to the customer — never leak internals. */
 export const ORDER_CREATION_ERROR_MESSAGE =
@@ -39,7 +39,6 @@ export type CreateOrderInput = {
 
 export type CreateOrderResult = {
   orderId: string;
-  checkoutUrl: string;
 };
 
 export async function createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
@@ -84,7 +83,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         input.genreOther,
         input.mood.join(" · "),
         "AWAITING_PAYMENT",
-        "", // kiwify_transaction_id
+        "", // cakto_transaction_id (payment id)
         "", // paid_at
         "PENDING",
         "", // download_url
@@ -102,17 +101,129 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     throw new Error(ORDER_CREATION_ERROR_MESSAGE);
   }
 
+  return { orderId };
+}
+
+// ---------------------------------------------------------------------------
+// Payment status transitions (shared by card charge response and webhook)
+// ---------------------------------------------------------------------------
+
+function rowToEmailOrder(row: OrderRow, txId: string | undefined): OrderForEmail {
+  const [
+    orderId = "",
+    createdAt = "",
+    name = "",
+    email = "",
+    whatsapp = "",
+    lyricsPreference = "",
+    lyrics = "",
+    description = "",
+    genre = "",
+    genreOther = "",
+    mood = "",
+  ] = row.values;
+  return {
+    orderId,
+    createdAt,
+    name,
+    email,
+    whatsapp,
+    lyricsPreference,
+    lyrics,
+    description,
+    genre,
+    genreOther,
+    mood: mood ? mood.split(" · ") : [],
+    txId,
+  };
+}
+
+/** Writes the Cakto payment id to col M — the webhook correlation key. */
+export async function persistTransactionId(orderId: string, transactionId: string): Promise<void> {
+  const rows = await readOrderRows();
+  const row = rows.find((r) => r.orderId === orderId);
+  if (!row) return;
+  await updateOrderRow(row.rowNumber, [{ column: "M", value: transactionId }]);
+}
+
+/** Row whose col M (cakto_transaction_id) holds the given Cakto payment id. */
+export function findRowByTransactionId(
+  rows: OrderRow[],
+  txId: string | undefined,
+): OrderRow | undefined {
+  if (!txId) return undefined;
+  return rows.find((row) => row.values[12] === txId);
+}
+
+/** Fallback correlation: most recent AWAITING_PAYMENT order for this e-mail. */
+export function findRowByEmail(rows: OrderRow[], email: string | undefined): OrderRow | undefined {
+  if (!email) return undefined;
+  const normalized = email.toLowerCase();
+  const candidates = rows.filter(
+    (row) => row.values[3]?.toLowerCase() === normalized && row.values[11] === "AWAITING_PAYMENT",
+  );
+  return candidates.length > 0 ? candidates[candidates.length - 1] : undefined;
+}
+
+/**
+ * Marks an order PAID (L/M/N) and notifies the owner (Q). Idempotent: an order
+ * already PAID with notification SENT is a no-op. E-mail failure must NEVER
+ * affect payment status.
+ */
+export async function markOrderPaid(
+  orderId: string,
+  txId: string,
+): Promise<"paid" | "duplicate" | "not_found"> {
+  let rows: OrderRow[];
   try {
-    const checkoutUrl = buildKiwifyCheckoutUrl({
-      orderId,
-      name: input.name,
-      email: input.email,
-      whatsapp: input.whatsapp || undefined,
-      utm: input.utm,
-    } satisfies CheckoutInput);
-    return { orderId, checkoutUrl };
+    rows = await readOrderRows();
   } catch (error) {
-    console.error("[orders] Failed to build Kiwify checkout URL:", error);
-    throw new Error(ORDER_CREATION_ERROR_MESSAGE);
+    console.error(`[orders] Failed to read sheet for order ${orderId}:`, error);
+    throw error;
+  }
+  const row = rows.find((r) => r.orderId === orderId);
+  if (!row) return "not_found";
+
+  const currentStatus = row.values[11] ?? ""; // L = payment_status
+  const notificationStatus = row.values[16] ?? ""; // Q = notification_status
+  if (currentStatus === "PAID" && notificationStatus === "SENT") return "duplicate";
+
+  const paidAt = new Date().toISOString();
+  await updateOrderRow(row.rowNumber, [
+    { column: "L", value: "PAID" },
+    { column: "M", value: txId },
+    { column: "N", value: paidAt },
+  ]);
+
+  try {
+    await sendOwnerOrderEmail(rowToEmailOrder(row, txId));
+    await updateOrderRow(row.rowNumber, [{ column: "Q", value: "SENT" }]);
+  } catch (emailError) {
+    console.error(
+      `[orders] Owner email failed for order ${orderId} — will retry on next webhook delivery:`,
+      emailError,
+    );
+    await updateOrderRow(row.rowNumber, [{ column: "Q", value: "FAILED" }]);
+  }
+  return "paid";
+}
+
+/** L=REFUSED only when the order is still AWAITING_PAYMENT. */
+export async function markOrderRefused(orderId: string): Promise<void> {
+  const rows = await readOrderRows();
+  const row = rows.find((r) => r.orderId === orderId);
+  if (!row) return;
+  if ((row.values[11] ?? "") === "AWAITING_PAYMENT") {
+    await updateOrderRow(row.rowNumber, [{ column: "L", value: "REFUSED" }]);
+  }
+}
+
+/** L=REFUNDED only when the order was PAID (keeps the row for auditing). */
+export async function markOrderRefunded(orderId: string): Promise<void> {
+  const rows = await readOrderRows();
+  const row = rows.find((r) => r.orderId === orderId);
+  if (!row) return;
+  if ((row.values[11] ?? "") === "PAID") {
+    await updateOrderRow(row.rowNumber, [{ column: "L", value: "REFUNDED" }]);
   }
 }

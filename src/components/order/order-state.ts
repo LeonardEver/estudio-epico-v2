@@ -1,4 +1,10 @@
 import type { Extra, OrderFormValues } from "@/lib/brief";
+import {
+  BUNDLE_PRICE_VALUE,
+  BUMP_PRICE_VALUE,
+  EXCLUSIVE_PAGE_PRICE_VALUE,
+  PRICE_VALUE,
+} from "@/components/landing/offer";
 
 export type Step = "MUSICA" | "EXTRAS" | "PAGAMENTO";
 
@@ -12,6 +18,8 @@ export const INITIAL_ORDER: OrderFormValues = {
   name: "",
   email: "",
   whatsapp: "",
+  /** CPF do titular (mascarado na UI, só dígitos na cobrança). */
+  cpf: "",
   lyricsPreference: "CREATE_LYRICS",
   lyrics: "",
   description: "",
@@ -24,12 +32,17 @@ export const INITIAL_ORDER: OrderFormValues = {
   extras: [],
   bundle: false,
   paymentMethod: "PIX",
+  /** Código de cupom digitado (a validade é decidida no servidor). */
+  coupon: "",
 };
 
-export const PRICE_MUSICA = 79.9;
-export const PRICE_CAPA = 19.9;
-export const PRICE_PAGINA = 59.9;
-export const PRICE_BUNDLE = 479;
+// Preços vêm da tabela única da oferta — nunca duplicar um número aqui.
+export const PRICE_MUSICA = PRICE_VALUE;
+export const PRICE_CAPA = BUMP_PRICE_VALUE;
+export const PRICE_PAGINA = EXCLUSIVE_PAGE_PRICE_VALUE;
+export const PRICE_BUNDLE = BUNDLE_PRICE_VALUE;
+
+export { formatBRL } from "@/lib/format";
 
 export function orderTotal(bundle: boolean, extras: Extra[]): number {
   if (bundle) return PRICE_BUNDLE;
@@ -37,9 +50,4 @@ export function orderTotal(bundle: boolean, extras: Extra[]): number {
   if (extras.includes("COVER")) total += PRICE_CAPA;
   if (extras.includes("EXCLUSIVE_PAGE")) total += PRICE_PAGINA;
   return total;
-}
-
-/** "R$ 159,70" -> "R$159,70" (padrão do produto). */
-export function formatBRL(value: number): string {
-  return `R$${value.toFixed(2).replace(".", ",")}`;
 }

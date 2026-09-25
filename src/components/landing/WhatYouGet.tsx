@@ -5,7 +5,7 @@ import { CTAButton } from "./CTAButton";
 import { PRICE } from "./offer";
 
 // Entregáveis do produto principal — exatamente estes 4, todos INCLUSOS no
-// R$79,90. Valores individuais são ancoragem de valor percebido (definidos
+// R$67. Valores individuais são ancoragem de valor percebido (definidos
 // pelo produto): capa, página exclusiva e distribuição NÃO entram aqui —
 // continuam sendo adicionais do funil, vendidos na página de pedido.
 const deliverables = [
@@ -104,7 +104,7 @@ export function WhatYouGet() {
             </div>
 
             <div className="mt-5 flex justify-center">
-              <ScrollCTA target="exemplos" label="OUVIR MÚSICAS REAIS" />
+              <ScrollCTA target="oferta" label="VER A OFERTA" />
             </div>
           </div>
         </Reveal>

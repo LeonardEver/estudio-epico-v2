@@ -1,7 +1,14 @@
-import { Check, Lock } from "lucide-react";
+import { Check, Clock, Download, Lock, ShieldCheck } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { CTAButton } from "./CTAButton";
 import { BUMP_PRICE, EXCLUSIVE_PAGE_PRICE, PRICE } from "./offer";
+
+// Sinais de confiança — todos já descritos no FAQ/na página, só mais visíveis.
+const trust = [
+  { icon: ShieldCheck, label: "Pagamento seguro" },
+  { icon: Download, label: "Entrega digital no e-mail e WhatsApp" },
+  { icon: Clock, label: "Produção em poucos dias úteis" },
+];
 
 const included = [
   "Música customizada, criada a partir da sua ideia",
@@ -61,6 +68,15 @@ export function MainOffer() {
               Na página de pedido você conta sua ideia em menos de 2 minutos e finaliza no checkout
               seguro.
             </p>
+
+            <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-border pt-5 text-xs text-muted-foreground">
+              {trust.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex items-center gap-1.5">
+                  <Icon className="size-3.5 shrink-0 text-accent" />
+                  {label}
+                </li>
+              ))}
+            </ul>
           </div>
         </Reveal>
 
@@ -70,6 +86,12 @@ export function MainOffer() {
             e Página Exclusiva ({EXCLUSIVE_PAGE_PRICE}).
           </p>
         </Reveal>
+
+        {/*
+          O CTA de WhatsApp desta seção foi removido: agora existe um botão
+          FLUTUANTE sempre visível (WhatsAppFloat) que cobre o mesmo caso sem
+          repetir o convite três vezes na mesma página.
+        */}
       </div>
     </section>
   );

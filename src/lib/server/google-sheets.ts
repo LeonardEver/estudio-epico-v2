@@ -6,7 +6,7 @@
  *
  *   A order_id | B created_at | C name | D email | E whatsapp
  *   F lyrics_preference | G lyrics | H description | I genre | J genre_other
- *   K mood | L payment_status | M kiwify_transaction_id | N paid_at
+ *   K mood | L payment_status | M cakto_transaction_id | N paid_at
  *   O delivery_status | P download_url | Q notification_status
  *   R recipient | S occasion | T references | U extras | V bundle | W payment_method
  */
@@ -31,7 +31,7 @@ export const HEADERS = [
   "genre_other",
   "mood",
   "payment_status",
-  "kiwify_transaction_id",
+  "cakto_transaction_id",
   "paid_at",
   "delivery_status",
   "download_url",

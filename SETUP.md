@@ -9,18 +9,19 @@ você recebe o pedido por e-mail → produz a música → envia o download manua
 
 ## 1. Visão geral dos serviços
 
-| Serviço | Para quê | O que você precisa criar |
-| --- | --- | --- |
-| Google Sheets | Armazenar os pedidos (planilha) | Planilha + service account |
-| Kiwify | Checkout e confirmação de pagamento | Chave de API + webhook |
-| Resend | E-mail de pedido pago para o dono | API key + domínio verificado |
-| Meta | Anúncios/conversões | Pixel ID (opcional) |
+| Serviço       | Para quê                            | O que você precisa criar     |
+| ------------- | ----------------------------------- | ---------------------------- |
+| Google Sheets | Armazenar os pedidos (planilha)     | Planilha + service account   |
+| Kiwify        | Checkout e confirmação de pagamento | Chave de API + webhook       |
+| Resend        | E-mail de pedido pago para o dono   | API key + domínio verificado |
+| Meta          | Anúncios/conversões                 | Pixel ID (opcional)          |
 
 ---
 
 ## 2. Google Sheets
 
 ### 2.1 Criar a planilha
+
 1. Acesse [sheets.new](https://sheets.new) e crie uma planilha chamada **Pedidos — Idea to Music**.
 2. Na **primeira linha** (cabeçalhos), cole exatamente estas colunas, uma por célula (A até Q):
 
@@ -33,6 +34,7 @@ order_id | created_at | name | email | whatsapp | lyrics_preference | lyrics | d
    o ID é o trecho `XXXXXXXXXXXX`. Coloque em `GOOGLE_SPREADSHEET_ID`.
 
 ### 2.2 Criar a service account (conta de serviço)
+
 1. Acesse o [Google Cloud Console](https://console.cloud.google.com/).
 2. Crie um projeto (ou use um existente).
 3. Menu **IAM e administração → Contas de serviço → Criar conta de serviço**.
@@ -45,11 +47,13 @@ order_id | created_at | name | email | whatsapp | lyrics_preference | lyrics | d
    - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` = a `private_key` completa, entre aspas duplas, com `\n` para quebras de linha (exatamente como está no JSON)
 
 ### 2.3 Compartilhar a planilha com a service account
+
 1. Na planilha, clique em **Compartilhar**.
 2. Cole o e-mail da service account (o `client_email`).
 3. Permissão: **Editor**. Sem isso o app não consegue escrever.
 
 ### 2.4 Nome da aba
+
 O app usa a **aba** da planilha (a guia na parte de baixo — não o nome do
 arquivo). Se você não definir `GOOGLE_SHEET_NAME`, o app detecta
 automaticamente a primeira aba. Para fixar, use o nome exato da guia,
@@ -61,6 +65,7 @@ aba como "Página1", não "Sheet1").
 ## 3. Kiwify
 
 ### 3.1 Product ID
+
 1. Kiwify → **Produtos** → clique no seu produto.
 2. O `KIWIFY_PRODUCT_ID` fica na URL da página de configuração do produto
    (formato UUID ou hash, ex.: `xxxxxxxx-xxxx-...`).
@@ -68,12 +73,14 @@ aba como "Página1", não "Sheet1").
      (a validação de produto só acontece quando a variável está preenchida).
 
 ### 3.2 API key
+
 1. Acesse [app.kiwify.com.br/config/api](https://app.kiwify.com.br/config/api).
 2. Crie/use um token em **Public API** e cole em `KIWIFY_API_KEY`.
    - Obs.: a API key não é usada diretamente pelo webhook hoje; ela fica
      configurada para uso futuro (consultas/validações de pedido).
 
 ### 3.3 Checkout URL
+
 - `KIWIFY_CHECKOUT_URL` = a URL atual do seu checkout, ex.:
   `https://pay.kiwify.com.br/GBFAfzT`
 - O app adiciona automaticamente os parâmetros suportados pela Kiwify:
@@ -81,6 +88,7 @@ aba como "Página1", não "Sheet1").
 - Parâmetros UTM/s1-s3/sck da sua página são repassados ao checkout.
 
 ### 3.4 Webhook
+
 1. Kiwify → **Apps → Webhooks → Criar webhook** (se o menu não aparecer,
    use o atalho de integrações do produto).
 2. **URL:** `https://SEU-DOMINIO/api/kiwify/webhook?token=SEU_SEGREDO`
@@ -99,6 +107,7 @@ aba como "Página1", não "Sheet1").
 > do cliente (pedido mais recente com status `AWAITING_PAYMENT`).
 
 ### 3.5 Página de sucesso (pós-pagamento)
+
 - O site já tem a página `https://SEU-DOMINIO/pedido-recebido`.
 - Se a sua conta Kiwify expõe a opção de **URL de redirecionamento / página
   de obrigado** nas configurações do produto, aponte-a para essa URL.
@@ -125,6 +134,82 @@ aba como "Página1", não "Sheet1").
   e `InitiateCheckout` (redirecionamento para a Kiwify).
 - **`Purchase` nunca é disparado pelo site** — compra só é considerada
   confirmada pelo webhook da Kiwify.
+- O `WhatsApp_Click` é um evento próprio da rota secundária de WhatsApp e não
+  altera nenhum dos eventos acima.
+
+---
+
+## 5.1 Microsoft Clarity
+
+- Heatmaps e gravação de sessão, carregados por `ClarityScript`
+  (`src/components/ClarityScript.tsx`) dentro do shell da aplicação.
+- Project ID `ynlvmnjkqc` fica no próprio componente (é público por design, vai
+  no HTML) — não precisa de variável de ambiente.
+- O `MetaPixelScript` continua separado e não é afetado.
+
+---
+
+## 5.2 WhatsApp (rota secundária de conversão)
+
+- `VITE_WHATSAPP_NUMBER` = número **com ou sem DDI**, só dígitos. Aceita
+  `5511999999999` ou `11958594370` (o `55` é adicionado automaticamente).
+  Pontuação (`+`, espaço, parêntese, hífen) é descartada.
+- Usado por `src/lib/whatsapp.ts`, que monta o link `https://wa.me/<numero>` com
+  a mensagem pré-preenchida. Nenhum componente hardcoda o número.
+- **Enquanto a variável estiver vazia, o CTA de WhatsApp não é renderizado** —
+  isso evita publicar um link quebrado.
+- O checkout continua sendo o fluxo principal: o WhatsApp é uma alternativa
+  para quem tem dúvidas, com hierarquia visual abaixo do CTA de compra.
+
+---
+
+## 5.3 Tabela de preços (fonte única)
+
+Tudo vem de `src/components/landing/offer.ts`. A âncora e a economia do Pacote
+são **derivadas da soma das partes** — não digitar à mão:
+
+| Item | Preço |
+|---|---|
+| Música personalizada | R$67,00 |
+| Capa personalizada | R$19,90 |
+| Página exclusiva | R$59,90 |
+| Lançamento nas plataformas | R$287,00 |
+| **Soma das partes (âncora do pacote)** | **R$433,80** |
+| **Pacote Completo** | **R$347,00** |
+| **Economia do pacote** | **R$86,80** |
+
+> ⚠️ **Mudar um número aqui NÃO muda o que o cliente paga.** A Cakto cobra a
+> partir da oferta (`offerId`) — o servidor nunca envia `amount`. Os dois lados
+> precisam ser atualizados juntos.
+
+### Ofertas na Cakto (ajuste manual no painel)
+
+| Oferta (variável) | offerId | Deve custar |
+|---|---|---|
+| `CAKTO_OFFER_ID_BASE` | `jtpbi76` | R$67,00 |
+| `CAKTO_OFFER_ID_BASE_CAPA` | `36w7tzm` | R$86,90 |
+| `CAKTO_OFFER_ID_BASE_PAGINA` | `rwexmw6` | R$126,90 |
+| `CAKTO_OFFER_ID_BASE_CAPA_PAGINA` | `rzp7kx7` | R$146,80 |
+| `CAKTO_OFFER_ID_BUNDLE` | `h2miw44` | R$347,00 |
+
+---
+
+## 5.4 Cupom PRIMEIRA15 (15% OFF)
+
+- Implementado com o **mecanismo nativo da Cakto**: o servidor envia
+  `coupon: "PRIMEIRA15"` no `POST /public_api/payments/`. Não existem ofertas
+  promocionais paralelas e nenhum preço sai do navegador.
+- **Pré-requisito manual:** criar o cupom `PRIMEIRA15` no painel da Cakto
+  (Cupons → Adicionar cupom), vinculado ao produto, com **15%** de desconto.
+  Sem isso a Cakto não tem desconto para aplicar.
+- O código do cupom vive em `src/lib/coupon.ts` (`COUPON_CODE`). O servidor só
+  repassa à Cakto o código que reconhece — qualquer outro valor é ignorado e a
+  cobrança sai pelo preço cheio.
+- **"Primeira compra" é o nome da campanha, não uma trava.** A API pública da
+  Cakto expõe apenas `code`, `discount`, `applyOnBumps`, `startTime` e
+  `endTime` — não há regra de uma-vez-por-CPF. Nada na interface promete isso.
+- O valor final cobrado é o que a Cakto devolve (`amount`) e é o que a tela do
+  PIX exibe. O desconto mostrado antes da cobrança é uma previsão.
 
 ---
 
@@ -145,6 +230,7 @@ RESEND_API_KEY=
 EMAIL_FROM=
 NOTIFICATION_EMAIL=
 VITE_META_PIXEL_ID=         # opcional
+VITE_WHATSAPP_NUMBER=       # opcional — E.164 sem "+", ex.: 5511999999999
 ```
 
 - **Local:** o app carrega o `.env` automaticamente em desenvolvimento.
@@ -177,7 +263,7 @@ bun run build
 3. Você deve ser redirecionado para o checkout Kiwify com nome/e-mail/telefone
    pré-preenchidos.
 4. **Na planilha:** uma nova linha deve aparecer com `payment_status =
-   AWAITING_PAYMENT` e um `order_id` tipo `MUS-20260831-7KQ2`.
+AWAITING_PAYMENT` e um `order_id` tipo `MUS-20260831-7KQ2`.
 5. Pague usando o checkout de teste da Kiwify (se disponível) ou um cartão real.
 6. **Na planilha:** `payment_status` vira `PAID`, `kiwify_transaction_id` e
    `paid_at` são preenchidos, e `notification_status` vira `SENT`.
@@ -201,14 +287,14 @@ curl -X POST "https://SEU-DOMINIO/api/kiwify/webhook?token=SEU_SEGREDO" \
 
 Respostas esperadas:
 
-| Situação | Resposta |
-| --- | --- |
-| Sem token / token errado | `401 unauthorized` |
-| Evento de teste da Kiwify | `200 {"ok":true,"ignored":"test_event"}` |
-| Evento sem pedido correspondente | `200 {"ok":true,"ignored":"order_not_found"}` |
-| Aprovação de pedido nosso | `200 {"ok":true,"orderId":"MUS-...","status":"PAID"}` |
+| Situação                                 | Resposta                                                        |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| Sem token / token errado                 | `401 unauthorized`                                              |
+| Evento de teste da Kiwify                | `200 {"ok":true,"ignored":"test_event"}`                        |
+| Evento sem pedido correspondente         | `200 {"ok":true,"ignored":"order_not_found"}`                   |
+| Aprovação de pedido nosso                | `200 {"ok":true,"orderId":"MUS-...","status":"PAID"}`           |
 | Webhook duplicado (já PAID + notificado) | `200 {"ok":true,"duplicate":true,...}` — **sem** segundo e-mail |
-| Google indisponível | `503` — a Kiwify reentrega depois |
+| Google indisponível                      | `503` — a Kiwify reentrega depois                               |
 
 ---
 

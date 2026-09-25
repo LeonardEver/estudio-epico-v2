@@ -1,17 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Lock, Music } from "lucide-react";
 import { analytics, captureTrackingParams } from "@/lib/analytics";
 import { briefSchema, type Extra, type OrderFormValues } from "@/lib/brief";
-import { createOrderFn } from "@/lib/create-order";
-import { INITIAL_ORDER, STEPS, type Step } from "./order-state";
+import { startCardPaymentFn, startPixPaymentFn } from "@/lib/cakto-payment";
+import { CPF_ERROR_MESSAGE, cpfDigits, isValidCpf } from "@/lib/cpf";
+import { isKnownCoupon } from "@/lib/coupon";
+import { getFingerprint } from "@/lib/fingerprint";
+import { INITIAL_ORDER, orderTotal, STEPS, type Step } from "./order-state";
 import { StepsIndicator } from "./StepsIndicator";
 import { OrderSummary } from "./OrderSummary";
 import { MusicStep } from "./MusicStep";
 import { ExtrasStep } from "./ExtrasStep";
 import { PaymentStep } from "./PaymentStep";
+import type { CardPayPayload, CardPayResult, PixChargeView } from "./payment-panels";
 
 const SUBMIT_ERROR_MESSAGE = "Não conseguimos preparar seu pedido agora. Tente novamente.";
 
@@ -22,11 +26,14 @@ function sleep(ms: number): Promise<void> {
 }
 
 export function OrderWizard() {
+  const navigate = useNavigate();
   const [values, setValues] = useState<OrderFormValues>(INITIAL_ORDER);
   const [step, setStep] = useState<Step>("MUSICA");
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitting, setSubmitting] = useState(false);
+  const [charging, setCharging] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pixCharge, setPixCharge] = useState<PixChargeView | null>(null);
+  const [pixAttempt, setPixAttempt] = useState(1);
 
   useEffect(() => {
     analytics.viewOrderPage();
@@ -77,35 +84,122 @@ export function OrderWizard() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const submit = async () => {
-    if (submitting) return;
+  const goToPaid = (orderId: string) => {
+    analytics.purchaseConfirmed(orderId);
+    navigate({ to: "/pedido-recebido", search: { order_id: orderId } });
+  };
+
+  /** Gera o PIX na Cakto e mostra o QR Code in-app. */
+  const startPix = async () => {
+    if (charging) return;
     if (!validateMusicStep()) {
       setStep("MUSICA");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-
     const parsed = briefSchema.safeParse({ ...values, utm: captureTrackingParams() });
     if (!parsed.success) {
       setStep("MUSICA");
       return;
     }
+    // Rede de segurança: o painel do PIX já valida o CPF, e o servidor rejeita
+    // de novo. Isto só cobre o caso de a chamada escapar do painel.
+    if (!isValidCpf(values.cpf)) {
+      setSubmitError(CPF_ERROR_MESSAGE);
+      return;
+    }
 
-    setSubmitting(true);
+    setCharging(true);
     setSubmitError(null);
     try {
-      // Garante que "Preparando seu pedido..." fique visível antes do redirect.
-      const [result] = await Promise.all([createOrderFn({ data: parsed.data }), sleep(700)]);
+      // Garante que "Gerando seu PIX..." fique visível.
+      const [result] = await Promise.all([
+        startPixPaymentFn({
+          data: {
+            ...parsed.data,
+            cpf: cpfDigits(values.cpf),
+            // O servidor só repassa o cupom conhecido; a Cakto decide o preço.
+            coupon: values.coupon,
+            fingerprint: getFingerprint(),
+            pixAttempt,
+          },
+        }),
+        sleep(700),
+      ]);
       analytics.briefSubmitted(result.orderId);
-      analytics.checkoutRedirect(result.orderId);
-      window.location.assign(result.checkoutUrl);
+      analytics.checkoutStarted(result.orderId);
+      setPixCharge({
+        orderId: result.orderId,
+        chargeId: result.chargeId,
+        qrCode: result.qrCode,
+        expirationDate: result.expirationDate,
+        amount: result.amount,
+        baseAmount: result.baseAmount,
+        discount: result.discount,
+      });
+    } catch (error) {
+      // Dev: mostra o detalhe estruturado vindo da server fn (step + causa);
+      // produção: mensagem amigável.
+      const detail = error instanceof Error && import.meta.env.DEV ? error.message : null;
+      setSubmitError(detail ?? SUBMIT_ERROR_MESSAGE);
+    } finally {
+      setCharging(false);
+    }
+  };
+
+  /** Novo PIX após expiração/falha — nova cobrança (idempotência própria). */
+  const retryPix = () => {
+    setPixCharge(null);
+    setPixAttempt((n) => n + 1);
+    setSubmitError(null);
+  };
+
+  /** Cartão tokenizado pelo SDK no browser → cobrança via server fn. */
+  const payCard = async (payload: CardPayPayload): Promise<CardPayResult> => {
+    const parsed = briefSchema.safeParse({ ...values, utm: captureTrackingParams() });
+    if (!parsed.success) {
+      return { ok: false, message: SUBMIT_ERROR_MESSAGE };
+    }
+
+    try {
+      const result = await startCardPaymentFn({
+        data: {
+          ...parsed.data,
+          coupon: values.coupon,
+          ...payload,
+          fingerprint: getFingerprint(),
+        },
+      });
+      analytics.briefSubmitted(result.orderId);
+      analytics.checkoutStarted(result.orderId);
+
+      if (result.status === "paid") {
+        goToPaid(result.orderId);
+        return { ok: true };
+      }
+      if (result.status === "declined") {
+        return {
+          ok: false,
+          message: "Pagamento recusado pelo banco. Verifique os dados ou tente outro cartão.",
+        };
+      }
+      if (result.status === "refused") {
+        return {
+          ok: false,
+          message: "Não foi possível processar seu pagamento agora. Tente novamente.",
+        };
+      }
+      return {
+        ok: false,
+        message: "Seu pagamento está em análise. Você será avisado assim que for confirmado.",
+      };
     } catch {
-      setSubmitError(SUBMIT_ERROR_MESSAGE);
-      setSubmitting(false);
+      return { ok: false, message: SUBMIT_ERROR_MESSAGE };
     }
   };
 
   const currentIndex = STEPS.findIndex((s) => s.id === step);
+  const couponApplied = isKnownCoupon(values.coupon);
 
   return (
     <main className="min-h-screen bg-background">
@@ -160,9 +254,18 @@ export function OrderWizard() {
               <PaymentStep
                 paymentMethod={values.paymentMethod}
                 onSelectMethod={selectMethod}
-                onSubmit={submit}
-                submitting={submitting}
+                total={orderTotal(values.bundle, values.extras)}
+                cpf={values.cpf}
+                onCpfChange={(value) => set("cpf", value)}
+                coupon={values.coupon}
+                onCouponChange={(value) => set("coupon", value)}
+                pixCharge={pixCharge}
+                charging={charging}
                 submitError={submitError}
+                onStartPix={startPix}
+                onPixPaid={goToPaid}
+                onRetryPix={retryPix}
+                onPayCard={payCard}
               />
             )}
           </div>
@@ -173,7 +276,7 @@ export function OrderWizard() {
               <button
                 type="button"
                 onClick={() => goTo(step === "EXTRAS" ? "MUSICA" : "EXTRAS")}
-                disabled={submitting}
+                disabled={charging}
                 className="inline-flex min-h-13 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-surface px-6 font-display text-sm font-bold tracking-wide text-foreground transition-colors hover:border-input disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <ArrowLeft className="size-4" />
@@ -202,7 +305,11 @@ export function OrderWizard() {
         {/* Resumo: sticky no desktop, expansível no mobile */}
         <aside className="mt-10 lg:mt-0">
           <div className="lg:sticky lg:top-8">
-            <OrderSummary bundle={values.bundle} extras={values.extras} />
+            <OrderSummary
+              bundle={values.bundle}
+              extras={values.extras}
+              couponApplied={couponApplied}
+            />
           </div>
         </aside>
       </div>

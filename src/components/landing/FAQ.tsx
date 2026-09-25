@@ -12,6 +12,10 @@ const faqs = [
     a: "Na página de pedido, você conta sua história em um formulário rápido: para quem é, qual a ocasião e o que você imagina. Leva menos de 2 minutos.",
   },
   {
+    q: "É seguro comprar?",
+    a: "Sim. O pagamento é único, sem assinatura, e a compra é finalizada em um checkout seguro. Se preferir falar com uma pessoa antes de decidir, é só chamar no WhatsApp.",
+  },
+  {
     q: "Posso escolher o estilo da música?",
     a: "Sim. Sertanejo, pop, pagode, funk, rock, eletrônica, MPB, gospel e mais. Você escolhe — ou descreve o clima e nós sugerimos.",
   },

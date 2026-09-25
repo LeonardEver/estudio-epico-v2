@@ -78,6 +78,8 @@ export function FinalOffer() {
             ou levar o pacote completo com lançamento nas plataformas.
           </p>
         </Reveal>
+
+        {/* WhatsApp desta seção: coberto pelo botão flutuante (WhatsAppFloat). */}
       </div>
     </section>
   );
