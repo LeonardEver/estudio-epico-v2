@@ -28,7 +28,7 @@ service-account*.json
 
 # Wrangler / Cloudflare
 .wrangler/
-.dev.vars
+.dev.vars*
 
 # Vercel (local project link)
 .vercel

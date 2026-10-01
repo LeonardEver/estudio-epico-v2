@@ -1,0 +1,21 @@
+{
+  "name": "leonardever-idea-to-music-main",
+  "compatibility_date": "2026-09-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "vars": {
+    "CAKTO_CLIENT_ID": "gJqYkrFtK5Zwl3GhHyFPlhQ6W87jVLdbS9bsu8wJ",
+    "CAKTO_OFFER_ID_BASE": "jtpbi76",
+    "CAKTO_OFFER_ID_BASE_CAPA": "36w7tzm",
+    "CAKTO_OFFER_ID_BASE_CAPA_PAGINA": "rzp7kx7",
+    "CAKTO_OFFER_ID_BASE_PAGINA": "rwexmw6",
+    "CAKTO_OFFER_ID_BUNDLE": "h2miw44",
+    "ORDER_EMAIL_NOTIFICATIONS": "false",
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "estudioepico@estudio-epico.iam.gserviceaccount.com",
+    "GOOGLE_SHEET_NAME": "Página1",
+    "GOOGLE_SPREADSHEET_ID": "1MTgDs49BvkgE5jNThEnrL9q8LCXe5svPSgS1Iw7URv0",
+    "VITE_CAKTO_SDK_CLIENT_ID": "gJqYkrFtK5Zwl3GhHyFPlhQ6W87jVLdbS9bsu8wJ",
+    "VITE_META_PIXEL_ID": "1068611905553899",
+    "VITE_WHATSAPP_NUMBER": "5511958594370"
+  }
+}

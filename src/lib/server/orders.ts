@@ -5,7 +5,7 @@
  */
 import { appendOrderRow, readOrderRows, updateOrderRow, type OrderRow } from "./google-sheets";
 import { generateOrderId } from "./order-id";
-import { missingOrderEnvVars } from "./env";
+import { env, missingOrderEnvVars } from "./env";
 import { sendOwnerOrderEmail, type OrderForEmail } from "./email";
 
 /** Safe message shown to the customer — never leak internals. */
@@ -166,9 +166,9 @@ export function findRowByEmail(rows: OrderRow[], email: string | undefined): Ord
 }
 
 /**
- * Marks an order PAID (L/M/N) and notifies the owner (Q). Idempotent: an order
- * already PAID with notification SENT is a no-op. E-mail failure must NEVER
- * affect payment status.
+ * Marks an order PAID (L/M/N). Owner email notifications are opt-in; when
+ * disabled, Q records DISABLED. Repeated confirmations are a no-op once the
+ * payment is recorded and no automatic notification is pending.
  */
 export async function markOrderPaid(
   orderId: string,
@@ -186,14 +186,21 @@ export async function markOrderPaid(
 
   const currentStatus = row.values[11] ?? ""; // L = payment_status
   const notificationStatus = row.values[16] ?? ""; // Q = notification_status
-  if (currentStatus === "PAID" && notificationStatus === "SENT") return "duplicate";
+  const emailNotificationsEnabled = env("ORDER_EMAIL_NOTIFICATIONS") === "true";
+  if (currentStatus === "PAID" && (!emailNotificationsEnabled || notificationStatus === "SENT")) {
+    return "duplicate";
+  }
 
-  const paidAt = new Date().toISOString();
+  const paidAt =
+    currentStatus === "PAID" && row.values[13] ? row.values[13] : new Date().toISOString();
   await updateOrderRow(row.rowNumber, [
     { column: "L", value: "PAID" },
     { column: "M", value: txId },
     { column: "N", value: paidAt },
+    ...(!emailNotificationsEnabled ? [{ column: "Q", value: "DISABLED" }] : []),
   ]);
+
+  if (!emailNotificationsEnabled) return "paid";
 
   try {
     await sendOwnerOrderEmail(rowToEmailOrder(row, txId));

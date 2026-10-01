@@ -1,9 +1,9 @@
-# SETUP — Fluxo de pedidos (briefing → Kiwify → webhook → e-mail)
+# SETUP — Fluxo de pedidos e entrega manual
 
 Guia completo para configurar o fluxo de compra do MVP. Siga na ordem.
 
 O fluxo é **manual de propósito**: o cliente envia o briefing → paga na Kiwify →
-você recebe o pedido por e-mail → produz a música → envia o download manualmente.
+você acompanha o pedido pago na planilha → produz a música → envia o download manualmente.
 
 ---
 
@@ -13,7 +13,7 @@ você recebe o pedido por e-mail → produz a música → envia o download manua
 | ------------- | ----------------------------------- | ---------------------------- |
 | Google Sheets | Armazenar os pedidos (planilha)     | Planilha + service account   |
 | Kiwify        | Checkout e confirmação de pagamento | Chave de API + webhook       |
-| Resend        | E-mail de pedido pago para o dono   | API key + domínio verificado |
+| Resend (opcional) | Aviso de pedido pago para o dono | Desativado por padrão       |
 | Meta          | Anúncios/conversões                 | Pixel ID (opcional)          |
 
 ---
@@ -115,7 +115,19 @@ aba como "Página1", não "Sheet1").
 
 ---
 
-## 4. Resend (e-mail do dono)
+## 4. E-mails manuais e aviso opcional ao dono
+
+O envio da música ao cliente é manual. Acompanhe os pedidos pagos na planilha,
+envie o e-mail pelo seu serviço habitual e atualize `delivery_status` (O) e
+`download_url` (P). Não é necessário configurar Resend.
+
+`ORDER_EMAIL_NOTIFICATIONS=false` desativa os avisos automáticos ao dono; a
+coluna `notification_status` (Q) recebe `DISABLED` nos novos pagamentos.
+Credenciais antigas de Resend não ativam o envio. Sem essa variável, o padrão
+também é desativado.
+
+Se quiser ativar esses avisos no futuro, defina `ORDER_EMAIL_NOTIFICATIONS=true`
+e configure os itens abaixo. Essa opção não automatiza a entrega da música.
 
 1. Crie uma conta em [resend.com](https://resend.com).
 2. **Domínios → Adicionar domínio** e verifique seu domínio (registros DNS).
@@ -226,6 +238,8 @@ GOOGLE_SPREADSHEET_ID=
 GOOGLE_SERVICE_ACCOUNT_EMAIL=
 GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY=""
 GOOGLE_SHEET_NAME=          # opcional
+ORDER_EMAIL_NOTIFICATIONS=false
+# Apenas se ativar o aviso automático ao dono:
 RESEND_API_KEY=
 EMAIL_FROM=
 NOTIFICATION_EMAIL=
@@ -266,9 +280,10 @@ bun run build
 AWAITING_PAYMENT` e um `order_id` tipo `MUS-20260831-7KQ2`.
 5. Pague usando o checkout de teste da Kiwify (se disponível) ou um cartão real.
 6. **Na planilha:** `payment_status` vira `PAID`, `kiwify_transaction_id` e
-   `paid_at` são preenchidos, e `notification_status` vira `SENT`.
-7. **No e-mail do dono:** chega o e-mail 🎵 com pedido, cliente e briefing.
+   `paid_at` são preenchidos, e `notification_status` vira `DISABLED`.
+7. Acompanhe o pedido na planilha e envie a entrega manualmente ao cliente.
 
+Somente se o aviso opcional estiver ativado, `notification_status` vira `SENT`.
 Se o e-mail não chegar mas o pagamento estiver `PAID` na planilha: o e-mail
 falhou (`notification_status = FAILED`). A próxima entrega do webhook tenta
 de novo — ou reenvie o webhook manualmente no painel da Kiwify (logs).
