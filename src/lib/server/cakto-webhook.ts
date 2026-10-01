@@ -58,7 +58,7 @@ function verifySignature(rawBody: string, secret: string, request: Request): boo
   if (!timestamp || !signature) return true;
 
   const match = /^v1=([a-f0-9]+)$/i.exec(signature.trim());
-  if (!match) return false;
+  if (!match?.[1]) return false;
 
   const timestampSeconds = Number(timestamp);
   if (!Number.isFinite(timestampSeconds)) return false;

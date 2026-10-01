@@ -36,6 +36,7 @@ const PERCENT = `${Math.round(COUPON_DISCOUNT * 100)}%`;
  */
 export function CouponCard({ total, value, onChange }: CouponCardProps) {
   const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState(value);
   const applied = isKnownCoupon(value);
 
   useEffect(() => {
@@ -43,8 +44,9 @@ export function CouponCard({ total, value, onChange }: CouponCardProps) {
   }, []);
 
   const handleApply = () => {
-    if (isKnownCoupon(value)) {
+    if (isKnownCoupon(draft)) {
       setError(null);
+      onChange(draft);
       analytics.couponApplied();
       return;
     }
@@ -78,7 +80,7 @@ export function CouponCard({ total, value, onChange }: CouponCardProps) {
               <span className="font-medium text-accent">−{formatBRL(savings)}</span>
             </li>
             <li className="flex items-center justify-between gap-3 border-t border-border pt-1.5">
-              <span className="font-semibold">Você paga</span>
+              <span className="font-semibold">Total com cupom</span>
               <span className="offer-gradient-text font-display text-xl font-extrabold">
                 {formatBRL(finalPrice)}
               </span>
@@ -88,6 +90,7 @@ export function CouponCard({ total, value, onChange }: CouponCardProps) {
             type="button"
             onClick={() => {
               onChange("");
+              setDraft("");
               setError(null);
             }}
             className="mt-3 cursor-pointer text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
@@ -100,12 +103,14 @@ export function CouponCard({ total, value, onChange }: CouponCardProps) {
           <div className="flex gap-2">
             <Input
               aria-label="Código do cupom"
+              name="coupon"
+              spellCheck={false}
               placeholder="Cupom"
               autoComplete="off"
               autoCapitalize="characters"
-              value={value}
+              value={draft}
               onChange={(e) => {
-                onChange(e.target.value.toUpperCase());
+                setDraft(e.target.value.toUpperCase());
                 setError(null);
               }}
               onKeyDown={(e) => {

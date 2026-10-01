@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { OrderWizard } from "@/components/order/OrderWizard";
 
 export const Route = createFileRoute("/pedido")({
+  validateSearch: (search: Record<string, unknown>): { pacote?: "completo" } =>
+    search["pacote"] === "completo" ? { pacote: "completo" } : {},
   head: () => ({
     meta: [
       { title: "Crie sua música personalizada | Estúdio Épico" },
@@ -16,5 +18,6 @@ export const Route = createFileRoute("/pedido")({
  * A landing page vende; esta página converte.
  */
 function OrderPage() {
-  return <OrderWizard />;
+  const { pacote } = Route.useSearch();
+  return <OrderWizard key={pacote ?? "musica"} initialBundle={pacote === "completo"} />;
 }

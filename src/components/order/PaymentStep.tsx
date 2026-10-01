@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { CPF_ERROR_MESSAGE, formatCpf, isValidCpf } from "@/lib/cpf";
 import type { PaymentMethod } from "@/lib/brief";
 import { CouponCard } from "./CouponCard";
+import { couponPrice, isKnownCoupon } from "@/lib/coupon";
 import {
   PaymentCardPanel,
   PaymentPixPanel,
@@ -73,6 +74,7 @@ export function PaymentStep({
   const handleStartPix = () => {
     if (!isValidCpf(cpf)) {
       setCpfError(CPF_ERROR_MESSAGE);
+      requestAnimationFrame(() => document.getElementById("pix-cpf")?.focus());
       return;
     }
     setCpfError(null);
@@ -98,7 +100,7 @@ export function PaymentStep({
           role="radiogroup"
           aria-label="Método de pagamento"
         >
-          {METHODS.map((method) => {
+          {METHODS.map((method, index) => {
             const selected = paymentMethod === method.id;
             return (
               <button
@@ -107,6 +109,17 @@ export function PaymentStep({
                 role="radio"
                 aria-checked={selected}
                 onClick={() => onSelectMethod(method.id)}
+                onKeyDown={(event) => {
+                  if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key))
+                    return;
+                  event.preventDefault();
+                  const nextIndex = index === 0 ? 1 : 0;
+                  const nextMethod = METHODS[nextIndex];
+                  if (nextMethod) onSelectMethod(nextMethod.id);
+                  event.currentTarget.parentElement
+                    ?.querySelectorAll<HTMLButtonElement>("button")
+                    [nextIndex]?.focus();
+                }}
                 className={cn(
                   "relative cursor-pointer rounded-2xl border p-4 text-left transition-colors",
                   selected
@@ -172,13 +185,13 @@ export function PaymentStep({
                   type="button"
                   onClick={handleStartPix}
                   disabled={charging}
-                  className="group inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-price)] font-display text-base font-bold tracking-wide text-primary-foreground transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 sm:text-lg"
+                  className="group inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-price)] font-display text-base font-bold tracking-wide text-primary-foreground transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 sm:text-lg"
                   style={{ boxShadow: "var(--shadow-offer)" }}
                 >
                   {charging ? (
                     <>
                       <Loader2 className="size-5 animate-spin" />
-                      Gerando seu PIX...
+                      Gerando seu Pix…
                     </>
                   ) : (
                     <>
@@ -194,7 +207,12 @@ export function PaymentStep({
 
         {paymentMethod === "CARD" && (
           <div className="mt-5 rounded-2xl border border-border bg-surface/60 p-5">
-            <PaymentCardPanel total={total} cpf={cpf} onCpfChange={onCpfChange} onPay={onPayCard} />
+            <PaymentCardPanel
+              total={isKnownCoupon(coupon) ? couponPrice(total) : total}
+              cpf={cpf}
+              onCpfChange={onCpfChange}
+              onPay={onPayCard}
+            />
           </div>
         )}
       </div>
@@ -211,7 +229,7 @@ export function PaymentStep({
       <div>
         <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <li className="flex items-center gap-1.5">
-            <Lock className="size-3.5 text-accent" /> Pagamento 100% seguro
+            <Lock className="size-3.5 text-accent" /> Pagamento via Cakto
           </li>
           <li className="flex items-center gap-1.5">
             <ShieldCheck className="size-3.5 text-accent" /> Pagamento único

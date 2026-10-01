@@ -1,0 +1,132 @@
+﻿[
+    {
+        "contentWidth":  305,
+        "ctaBottom":  538,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  305,
+        "viewport":  320
+    },
+    {
+        "contentWidth":  345,
+        "ctaBottom":  519,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  345,
+        "viewport":  360
+    },
+    {
+        "contentWidth":  360,
+        "ctaBottom":  523,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  360,
+        "viewport":  375
+    },
+    {
+        "contentWidth":  375,
+        "ctaBottom":  528,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  375,
+        "viewport":  390
+    },
+    {
+        "contentWidth":  399,
+        "ctaBottom":  536,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  399,
+        "viewport":  414
+    },
+    {
+        "contentWidth":  415,
+        "ctaBottom":  542,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  415,
+        "viewport":  430
+    },
+    {
+        "contentWidth":  753,
+        "ctaBottom":  586,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  753,
+        "viewport":  768
+    },
+    {
+        "contentWidth":  1009,
+        "ctaBottom":  562,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  1009,
+        "viewport":  1024
+    },
+    {
+        "contentWidth":  1265,
+        "ctaBottom":  609,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  1265,
+        "viewport":  1280
+    },
+    {
+        "contentWidth":  1425,
+        "ctaBottom":  681,
+        "ctaVisible":  true,
+        "h1Count":  1,
+        "lang":  "pt-BR",
+        "overflow":  [
+
+                     ],
+        "primaryHref":  "/pedido",
+        "scrollWidth":  1425,
+        "viewport":  1440
+    }
+]

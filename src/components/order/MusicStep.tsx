@@ -45,6 +45,7 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
             </label>
             <Input
               id="order-name"
+              name="name"
               type="text"
               autoComplete="name"
               value={values.name}
@@ -63,6 +64,7 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
             </label>
             <Input
               id="order-whatsapp"
+              name="whatsapp"
               type="tel"
               autoComplete="tel"
               inputMode="tel"
@@ -82,6 +84,8 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
             </label>
             <Input
               id="order-email"
+              name="email"
+              spellCheck={false}
               type="email"
               autoComplete="email"
               inputMode="email"
@@ -104,7 +108,7 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="order-recipient" className="mb-1.5 block text-sm font-medium">
-              Para quem é essa música? <span className="text-destructive">*</span>
+              Para quem é essa música? <span className="text-muted-foreground">(opcional)</span>
             </label>
             <Input
               id="order-recipient"
@@ -120,7 +124,7 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
           </div>
           <div>
             <label htmlFor="order-occasion" className="mb-1.5 block text-sm font-medium">
-              Qual é a ocasião? <span className="text-destructive">*</span>
+              Qual é a ocasião? <span className="text-muted-foreground">(opcional)</span>
             </label>
             <Input
               id="order-occasion"
@@ -158,8 +162,12 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
       {/* Estilo musical */}
       <div>
         <SectionLabel>Estilo musical</SectionLabel>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {GENRES.map((genre) => {
+        <div
+          className="grid grid-cols-3 gap-2 sm:grid-cols-4"
+          role="radiogroup"
+          aria-label="Estilo musical"
+        >
+          {GENRES.map((genre, index) => {
             const selected = values.genre === genre;
             return (
               <button
@@ -168,6 +176,22 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
                 role="radio"
                 aria-checked={selected}
                 onClick={() => onChange("genre", genre)}
+                onKeyDown={(event) => {
+                  const direction =
+                    event.key === "ArrowRight" || event.key === "ArrowDown"
+                      ? 1
+                      : event.key === "ArrowLeft" || event.key === "ArrowUp"
+                        ? -1
+                        : 0;
+                  if (!direction) return;
+                  event.preventDefault();
+                  const nextIndex = (index + direction + GENRES.length) % GENRES.length;
+                  const nextGenre = GENRES[nextIndex];
+                  if (nextGenre) onChange("genre", nextGenre);
+                  event.currentTarget.parentElement
+                    ?.querySelectorAll<HTMLButtonElement>("button")
+                    [nextIndex]?.focus();
+                }}
                 className={cn(
                   "cursor-pointer rounded-xl border px-2 py-3 text-xs font-medium transition-colors sm:text-sm",
                   selected
@@ -184,6 +208,7 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
           <div className="mt-2.5">
             <Input
               id="order-genre-other"
+              aria-label="Outro estilo musical"
               value={values.genreOther}
               onChange={(e) => onChange("genreOther", e.target.value)}
               placeholder="Digite o gênero musical"
@@ -213,6 +238,7 @@ export function MusicStep({ values, errors, onChange }: MusicStepProps) {
           <div className="mt-3">
             <Textarea
               id="order-lyrics"
+              aria-label="Letra da sua música"
               value={values.lyrics}
               onChange={(e) => {
                 onChange("lyrics", e.target.value);

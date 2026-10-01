@@ -1,52 +1,56 @@
-import { AudioLines, Download, MessageSquareText } from "lucide-react";
-import { Reveal } from "./Reveal";
-import { ScrollCTA } from "./ScrollCTA";
+import { CTAButton } from "./CTAButton";
 
 const steps = [
-  { n: "01", icon: MessageSquareText, text: "Você conta sua ideia." },
-  { n: "02", icon: AudioLines, text: "Nós transformamos sua ideia em música." },
-  { n: "03", icon: Download, text: "Você recebe sua música pronta." },
+  {
+    title: "Conte sua ideia",
+    description:
+      "Diga para quem é, o que precisa aparecer na letra e escolha o estilo. Se já escreveu a letra, pode enviá-la.",
+  },
+  {
+    title: "Nós criamos a música",
+    description:
+      "Sua ideia orienta a letra e a produção musical, com mixagem e masterização incluídas.",
+  },
+  {
+    title: "Receba e dê o play",
+    description:
+      "Em 24h, a entrega chega no seu e-mail e WhatsApp. Você pode solicitar até 3 rodadas de alterações.",
+  },
 ];
-
 export function HowItWorks() {
   return (
-    <section id="como-funciona" className="border-y border-border bg-surface/40 py-16 sm:py-24">
-      <div className="mx-auto max-w-3xl px-5 text-center">
-        <Reveal>
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
-            Como funciona
-          </p>
-          <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-5xl">Simples assim.</h2>
-        </Reveal>
-
-        <div className="mt-10 space-y-2 text-left">
-          {steps.map((step, i) => (
-            <Reveal key={step.n} delay={i * 0.05}>
-              <div className="flex items-center gap-4 border-b border-border py-5 sm:gap-5">
-                <span className="offer-gradient-text font-display text-3xl font-extrabold sm:text-4xl">
-                  {step.n}
-                </span>
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
-                  <step.icon className="size-5 text-accent" />
-                </span>
-                <p className="text-base font-medium sm:text-lg">{step.text}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={0.05}>
-          <p className="mt-8 text-sm text-muted-foreground">
-            Você não precisa saber nada de música.{" "}
-            <span className="text-foreground">Só da ideia.</span>
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <div className="mt-7">
-            <ScrollCTA target="para-quem" label="VER PARA QUEM É" />
+    <section id="como-funciona" className="epic-section">
+      <div className="epic-container">
+        <div className="epic-section-heading">
+          <div>
+            <p className="epic-kicker">Do seu jeito, sem complicar</p>
+            <h2>
+              Você conta. A gente cria.
+              <br />
+              Você dá o play.
+            </h2>
           </div>
-        </Reveal>
+          <p>Não precisa saber produzir música. Precisa contar o que ela deve dizer.</p>
+        </div>
+        <ol className="epic-process">
+          {steps.map((step, index) => (
+            <li key={step.title}>
+              <span className="epic-step-number">0{index + 1}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="epic-process-bottom">
+          <p>
+            Letra própria ou composição incluída.
+            <br />
+            <strong>A escolha é sua.</strong>
+          </p>
+          <CTAButton location="processo" />
+        </div>
       </div>
     </section>
   );

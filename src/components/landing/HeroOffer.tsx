@@ -1,140 +1,111 @@
-import { motion } from "motion/react";
-import { Headphones, Sparkles, Download } from "lucide-react";
+import { ArrowDown, Check, Headphones } from "lucide-react";
 import heroStudio from "@/assets/hero-studio.jpg";
-import { ScrollCTA } from "./ScrollCTA";
-import { PRICE, PRICE_ANCHOR, PRICE_SAVINGS, PRICE_VALUE } from "./offer";
+import { CTAButton } from "./CTAButton";
+import { PRICE_ANCHOR, PRICE_SAVINGS, PRICE_VALUE } from "./offer";
 import { formatBRL } from "@/lib/format";
-
-const badges = [
-  { icon: Sparkles, label: "Pagamento único" },
-  { icon: Headphones, label: "Produção personalizada" },
-  { icon: Download, label: "Entrega digital" },
-];
+import { analytics } from "@/lib/analytics";
 
 export function HeroOffer() {
   return (
-    <section id="hero" className="relative isolate overflow-hidden">
-      <img
-        src={heroStudio}
-        alt="Estúdio de produção musical profissional com monitores, teclado MIDI e iluminação quente"
-        width={1600}
-        height={1200}
-        className="absolute inset-0 -z-20 size-full object-cover opacity-45"
-      />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--background)_78%,transparent)_0%,color-mix(in_oklab,var(--background)_88%,transparent)_45%,var(--background)_100%)]" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 -z-10 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px]" />
-
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-5 pt-14 pb-12 text-center sm:pt-20 sm:pb-16">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="rounded-full border border-border bg-surface/70 px-4 py-1.5 text-[11px] font-semibold tracking-[0.22em] text-muted-foreground backdrop-blur"
-        >
-          ESTUDIO ÉPICO — PRODUÇÃO MUSICAL PROFISSIONAL
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.05 }}
-          /* A palavra "TRANSFORMAMOS" sozinha era mais larga que a tela em
-             320px e o `overflow-hidden` da seção cortava a letra inicial.
-             O clamp reduz só abaixo de ~390px (a partir daí continua 2.3rem,
-             e o `sm:` mantém o desktop exatamente como estava). */
-          className="mt-6 text-[clamp(1.7rem,9.4vw,2.3rem)] leading-[1.06] font-extrabold tracking-tight sm:text-6xl lg:text-7xl"
-        >
-          VOCÊ TEM UMA IDEIA.
-          <br />
-          NÓS TRANSFORMAMOS ELA EM <span className="offer-gradient-text">UMA MÚSICA.</span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.1 }}
-          className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg"
-        >
-          Uma história, uma homenagem, um aniversário, um presente, uma marca ou simplesmente uma
-          ideia. Você conta pra gente — e recebe uma música criada{" "}
-          <span className="font-semibold text-foreground">especialmente para você.</span>
-        </motion.p>
-
-        {/* Oferta — precisa ser entendida em menos de 2 segundos. */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.15 }}
-          className="mt-9 w-full max-w-xl"
-        >
-          <div
-            className="rounded-3xl border border-border bg-surface/80 px-5 py-7 backdrop-blur sm:px-8"
-            style={{ boxShadow: "var(--shadow-frame)" }}
-          >
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-              Sua música personalizada
-            </p>
-
-            <p className="mt-4 text-base text-muted-foreground">
-              <span className="text-[11px] font-semibold tracking-[0.2em] uppercase">De </span>
-              <span className="font-medium line-through decoration-primary/60 decoration-2">
-                {PRICE_ANCHOR}
-              </span>
-            </p>
-
-            <p className="mt-1 flex flex-wrap items-baseline justify-center gap-x-2.5">
-              <span className="text-[11px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-                Por
-              </span>
-              <span className="offer-gradient-text font-display text-6xl leading-none font-extrabold sm:text-7xl lg:text-8xl">
-                {formatBRL(PRICE_VALUE)}
-              </span>
-            </p>
-
-            <p className="mt-4 inline-flex rounded-full bg-primary/15 px-4 py-1.5 font-display text-sm font-extrabold tracking-wide text-accent uppercase">
-              Você economiza {PRICE_SAVINGS}
-            </p>
-
-            {/*
-              Os dois CTAs do topo são NAVEGAÇÃO — nenhum abre /pedido nem
-              dispara InitiateCheckout. A conversão só acontece nos CTAs finais
-              da oferta. O botão principal mantém a força visual de compra, mas
-              apenas conduz o visitante pela jornada.
-            */}
-            <div className="mt-6 flex flex-col items-center gap-3">
-              <ScrollCTA
-                target="vsl"
-                label={`QUERO MINHA MÚSICA POR ${PRICE}`}
-                variant="primary"
-                arrow="right"
-                className="w-full sm:w-auto"
-              />
-              <ScrollCTA
-                target="como-funciona"
-                label="VEJA COMO FUNCIONA"
-                variant="outline"
-                size="md"
-                className="w-full sm:w-auto"
-              />
+    <section id="hero" className="epic-hero">
+      <header className="epic-header epic-container">
+        <a href="#hero" className="epic-brand" aria-label="Estúdio Épico, início">
+          <span className="epic-brand-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </span>
+          <span>
+            estúdio <strong>épico.</strong>
+          </span>
+        </a>
+        <a href="#exemplos" className="epic-header-link">
+          Conheça o som <Headphones size={16} aria-hidden="true" />
+        </a>
+      </header>
+      <div className="epic-container epic-hero-grid">
+        <div className="epic-hero-copy">
+          <p className="epic-kicker">
+            <span aria-hidden="true" /> Música feita para você
+          </p>
+          <h1>Sua ideia merece uma música própria.</h1>
+          <p className="epic-hero-description">
+            Um presente com a sua história. Um jingle com o nome da sua marca. Você conta a ideia e
+            recebe uma música feita a partir dela.
+          </p>
+          <div className="epic-hero-price">
+            <div>
+              <p className="epic-price-anchor">
+                De <s>{PRICE_ANCHOR}</s> por
+              </p>
+              <p className="epic-price">{formatBRL(PRICE_VALUE)}</p>
             </div>
-
-            <p className="mt-4 text-xs text-muted-foreground">Pagamento único · Sem assinatura</p>
+            <p className="epic-saving">
+              Economize {PRICE_SAVINGS}
+              <span>Pagamento único</span>
+            </p>
           </div>
-        </motion.div>
-
-        <motion.ul
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.2 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground"
-        >
-          {badges.map(({ icon: Icon, label }) => (
-            <li key={label} className="flex items-center gap-2">
-              <Icon className="size-4 text-accent" />
-              {label}
-            </li>
-          ))}
-        </motion.ul>
+          <div className="epic-hero-actions">
+            <CTAButton label="Criar minha música" location="hero" />
+            <a
+              href="#exemplos"
+              className="epic-listen-link"
+              onClick={() => analytics.scrollCtaClick("exemplos")}
+            >
+              <Headphones size={18} aria-hidden="true" /> Ouvir exemplos
+            </a>
+          </div>
+          <p className="epic-next-step">
+            Conte sua ideia no próximo passo. Pague por Pix ou cartão.
+          </p>
+          <ul className="epic-hero-included">
+            {["Letra + produção", "Entrega em 24h", "Até 3 revisões"].map((item) => (
+              <li key={item}>
+                <Check size={14} aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="epic-hero-art">
+          <img
+            src={heroStudio}
+            alt="Mesa de produção musical com teclado, monitores e iluminação quente"
+            width={1600}
+            height={1200}
+            fetchPriority="high"
+            className="epic-studio-image"
+          />
+          <div className="epic-photo-caption">
+            <span>Música personalizada</span>
+            <strong>
+              A história é sua.
+              <br />O próximo play também.
+            </strong>
+          </div>
+          <a
+            href="#exemplos"
+            className="epic-photo-track"
+            aria-label="Ouvir os exemplos de músicas do Estúdio Épico"
+          >
+            <span className="epic-disc" aria-hidden="true">
+              <i />
+            </span>
+            <span>
+              <small>Do briefing ao play</small>
+              <strong>Ouça o que uma ideia pode virar</strong>
+            </span>
+            <ArrowDown size={20} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+      <div className="epic-container epic-hero-bottom">
+        <span>Sua história. Seu estilo. Sua música.</span>
+        <a href="#exemplos">
+          Dê o primeiro play <ArrowDown size={16} aria-hidden="true" />
+        </a>
       </div>
     </section>
   );

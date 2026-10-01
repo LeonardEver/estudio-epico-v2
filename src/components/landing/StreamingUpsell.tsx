@@ -39,7 +39,7 @@ export function StreamingUpsell({ onDecline }: { onDecline: () => void }) {
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-primary/15 blur-[130px]" />
       <div className="mx-auto max-w-2xl px-5 text-center">
         <p className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/70 px-4 py-1.5 text-[11px] font-semibold tracking-[0.22em] text-accent uppercase backdrop-blur">
-          <Sparkles className="size-3.5" /> Oferta exclusiva para você
+          <Sparkles className="size-3.5" /> Serviço adicional de lançamento
         </p>
 
         <h1 className="mt-6 text-3xl leading-tight font-extrabold sm:text-5xl">
@@ -67,8 +67,8 @@ export function StreamingUpsell({ onDecline }: { onDecline: () => void }) {
             </span>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Serviço de lançamento, com suporte no processo. Oferta válida somente agora, junto com o
-            seu pedido.
+            Serviço de lançamento com suporte no processo. Este serviço é opcional e tem cobrança
+            separada da música avulsa.
           </p>
 
           <button

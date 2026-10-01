@@ -202,8 +202,7 @@ export function ExtrasStep({ values, onToggleExtra, onToggleBundle }: ExtrasStep
                 <Flame className="size-4" /> Pacote completo
               </p>
               <h3 className="mt-2 font-display text-2xl leading-tight font-extrabold sm:text-3xl">
-                SUA MÚSICA
-                EM TODA A <span className="offer-gradient-text">INTERNET.</span>
+                SUA MÚSICA EM TODA A <span className="offer-gradient-text">INTERNET.</span>
               </h3>
               <p className="mt-2 text-sm font-medium text-muted-foreground">
                 {DISTRIBUTION_PLATFORMS.join(" • ")} e muito mais

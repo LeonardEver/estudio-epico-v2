@@ -1,105 +1,160 @@
-import { Check, Clock, Download, Lock, ShieldCheck } from "lucide-react";
-import { Reveal } from "./Reveal";
+import { Check, ChevronDown, Disc3, LockKeyhole } from "lucide-react";
 import { CTAButton } from "./CTAButton";
-import { BUMP_PRICE, EXCLUSIVE_PAGE_PRICE, PRICE } from "./offer";
-
-// Sinais de confiança — todos já descritos no FAQ/na página, só mais visíveis.
-const trust = [
-  { icon: ShieldCheck, label: "Pagamento seguro" },
-  { icon: Download, label: "Entrega digital no e-mail e WhatsApp" },
-  { icon: Clock, label: "Produção em poucos dias úteis" },
-];
+import { PlatformLogos } from "./PlatformLogos";
+import { CoverPreview, ExclusivePagePreview } from "@/components/order/ExtraPreviews";
+import {
+  PRICE_VALUE,
+  PRICE_ANCHOR,
+  BUMP_PRICE,
+  EXCLUSIVE_PAGE_PRICE,
+  STREAMING_PRICE,
+  BUNDLE_PRICE,
+  BUNDLE_ANCHOR,
+  BUNDLE_SAVINGS,
+} from "./offer";
+import { formatBRL } from "@/lib/format";
 
 const included = [
-  "Música customizada, criada a partir da sua ideia",
-  "Composição da letra personalizada (ou envie a sua)",
-  "Produção musical completa no estilo que você escolher",
-  "Mixagem e masterização profissional",
+  "Letra com os detalhes da sua ideia, ou a letra que você enviar",
+  "Produção musical no estilo escolhido",
+  "Mixagem e masterização incluídas",
+  "Entrega digital em 24h, por e-mail e WhatsApp",
+  "Até 3 rodadas de alterações",
+];
+const bundleItems = [
+  { name: "Música personalizada", price: formatBRL(PRICE_VALUE) },
+  { name: "Capa personalizada", price: BUMP_PRICE },
+  { name: "Página exclusiva", price: EXCLUSIVE_PAGE_PRICE },
+  { name: "Lançamento nas plataformas", price: STREAMING_PRICE },
 ];
 
 export function MainOffer() {
   return (
-    <section id="oferta" className="relative overflow-hidden border-t border-border py-20 sm:py-28">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 bg-primary/10 blur-[120px]" />
-      <div className="mx-auto max-w-2xl px-5 text-center">
-        <Reveal>
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
-            A oferta
-          </p>
-          <h2 className="mt-3 text-3xl leading-tight font-extrabold sm:text-5xl">
-            Sua Música <span className="offer-gradient-text">Personalizada</span>
-          </h2>
-        </Reveal>
-
-        {/* Oferta principal — compacta */}
-        <Reveal delay={0.05}>
-          <div
-            className="mt-10 rounded-3xl border border-border bg-surface/80 p-7 text-left backdrop-blur sm:p-8"
-            style={{ boxShadow: "var(--shadow-frame)" }}
-          >
-            {/*
-              Mobile: coluna única (preço → benefícios), cada um usando a
-              largura toda do card. Antes era uma linha só com `flex-1` nos
-              benefícios — como `flex: 1 1 0%` pode encolher até zero, o bloco
-              NUNCA quebrava linha: virava uma coluna espremida ao lado do
-              preço, com o texto quebrando em 5+ linhas e o card altíssimo.
-              A partir de `sm` (640px) o layout é exatamente o de antes.
-            */}
-            <div className="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
-              <div>
-                <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                  Por apenas
-                </p>
-                <p className="offer-gradient-text font-display text-6xl leading-none font-extrabold sm:text-7xl">
-                  {PRICE}
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Pagamento único · Sem assinatura
-                </p>
-              </div>
-              <ul className="min-w-0 space-y-2.5 sm:flex-1">
-                {included.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm sm:text-base">
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15">
-                      <Check className="size-3.5 text-accent" />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+    <section id="oferta" className="epic-section epic-offer-section">
+      <div className="epic-container">
+        <div className="epic-section-heading">
+          <div>
+            <p className="epic-kicker">Escolha como sua ideia chega ao mundo</p>
+            <h2>
+              Da sua ideia ao áudio pronto.
+              <br />E além, se você quiser.
+            </h2>
+          </div>
+          <p>A música já vem completa. Capa, página e lançamento são escolhas suas.</p>
+        </div>
+        <div className="epic-offer-grid">
+          <article className="epic-music-offer">
+            <div className="epic-offer-label">
+              <Disc3 size={20} aria-hidden="true" /> A sua música
             </div>
-
-            <CTAButton className="mt-7 w-full" />
-
-            <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-              <Lock className="size-3.5 shrink-0" />
-              Na página de pedido você conta sua ideia em menos de 2 minutos e finaliza no checkout
-              seguro.
+            <h3>Sua música personalizada</h3>
+            <p className="epic-offer-description">
+              Para presentear, homenagear ou dar som à sua marca.
             </p>
-
-            <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-border pt-5 text-xs text-muted-foreground">
-              {trust.map(({ icon: Icon, label }) => (
-                <li key={label} className="flex items-center gap-1.5">
-                  <Icon className="size-3.5 shrink-0 text-accent" />
-                  {label}
+            <p className="epic-price-anchor">
+              De <s>{PRICE_ANCHOR}</s> por
+            </p>
+            <p className="epic-price">{formatBRL(PRICE_VALUE)}</p>
+            <p className="epic-payment-note">Pagamento único. Sem assinatura.</p>
+            <ul className="epic-simple-list">
+              {included.map((item) => (
+                <li key={item}>
+                  <Check size={17} aria-hidden="true" />
+                  {item}
                 </li>
               ))}
             </ul>
+            <CTAButton label="Criar minha música por R$67" location="oferta_musica" />
+            <p className="epic-offer-micro">
+              <LockKeyhole size={14} aria-hidden="true" /> Pix ou cartão. Confira o total antes de
+              pagar.
+            </p>
+          </article>
+          <article className="epic-bundle-offer">
+            <div className="epic-offer-label">O pacote completo</div>
+            <h3>Ouvir. Compartilhar. Lançar.</h3>
+            <p className="epic-offer-description">
+              Sua música com capa, uma página exclusiva e o serviço de lançamento nas plataformas.
+            </p>
+            <div className="epic-release-preview" aria-label="Apresentação ilustrativa do pacote">
+              <span className="epic-release-cover">
+                <Disc3 size={26} aria-hidden="true" />
+                <strong>
+                  Sua
+                  <br />
+                  música.
+                </strong>
+                <small>Estúdio Épico</small>
+              </span>
+              <div>
+                <span className="epic-preview-label">Prévia ilustrativa</span>
+                <strong>
+                  Uma faixa.
+                  <br />
+                  Mais formas de ouvir.
+                </strong>
+                <p>Áudio + capa + link + distribuição</p>
+              </div>
+            </div>
+            <PlatformLogos layout="row" className="epic-platforms" />
+            <p className="epic-platform-note">Destinos de distribuição. Sem parceria ou endosso.</p>
+            <ul className="epic-bundle-items">
+              {bundleItems.map((item) => (
+                <li key={item.name}>
+                  <span>{item.name}</span>
+                  <span>{item.price}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="epic-bundle-total">
+              <div>
+                <p className="epic-price-anchor">
+                  Separadamente, <s>{BUNDLE_ANCHOR}</s>
+                </p>
+                <p className="epic-price">{BUNDLE_PRICE}</p>
+              </div>
+              <span>
+                Economize
+                <br />
+                <strong>{BUNDLE_SAVINGS}</strong>
+              </span>
+            </div>
+            <CTAButton label="Escolher pacote completo" bundle location="oferta_pacote" />
+            <p className="epic-offer-micro">Você revisa os itens e o total na página de pedido.</p>
+          </article>
+        </div>
+        <div className="epic-extras">
+          <div>
+            <h3>Só quer um toque a mais?</h3>
+            <p>Adicione um extra no pedido, se fizer sentido para você.</p>
           </div>
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <p className="mt-6 text-sm text-muted-foreground">
-            Na página de pedido você ainda pode adicionar extras: Capa Personalizada ({BUMP_PRICE})
-            e Página Exclusiva ({EXCLUSIVE_PAGE_PRICE}).
-          </p>
-        </Reveal>
-
-        {/*
-          O CTA de WhatsApp desta seção foi removido: agora existe um botão
-          FLUTUANTE sempre visível (WhatsAppFloat) que cobre o mesmo caso sem
-          repetir o convite três vezes na mesma página.
-        */}
+          <div className="epic-extras-list">
+            <details>
+              <summary>
+                <span>
+                  Capa personalizada <small>Uma imagem para acompanhar sua faixa.</small>
+                </span>
+                <strong>{BUMP_PRICE}</strong>
+                <ChevronDown size={17} aria-hidden="true" />
+              </summary>
+              <div className="epic-extra-preview">
+                <CoverPreview selected onAdd={() => {}} />
+              </div>
+            </details>
+            <details>
+              <summary>
+                <span>
+                  Página exclusiva <small>Um link para ouvir e compartilhar sua música.</small>
+                </span>
+                <strong>{EXCLUSIVE_PAGE_PRICE}</strong>
+                <ChevronDown size={17} aria-hidden="true" />
+              </summary>
+              <div className="epic-extra-preview">
+                <ExclusivePagePreview selected onAdd={() => {}} />
+              </div>
+            </details>
+          </div>
+        </div>
       </div>
     </section>
   );

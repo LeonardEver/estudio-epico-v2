@@ -7,8 +7,8 @@ import { whatsappLink } from "@/lib/whatsapp";
 /**
  * Botão flutuante de WhatsApp — canto inferior direito, fixo na viewport.
  *
- * Rota SECUNDÁRIA de conversão: não substitui o CTA de compra. No mobile fica
- * acima do StickyMobileCTA (bottom-20) para não cobrir o botão principal.
+ * Rota secundária no desktop. Mobile uses the inline FAQ/footer links so
+ * a floating support icon cannot cover the audio or video controls.
  *
  * Não renderiza nada quando VITE_WHATSAPP_NUMBER não está configurada.
  */
@@ -23,7 +23,7 @@ export function WhatsAppFloat() {
       rel="noopener noreferrer"
       onClick={() => analytics.whatsappClick()}
       aria-label="Fale conosco no WhatsApp"
-      className="group fixed right-4 bottom-20 z-50 flex size-12 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 active:scale-95 lg:right-6 lg:bottom-6 lg:size-14"
+      className="group fixed right-6 bottom-6 z-50 hidden size-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 active:scale-95 lg:flex"
       style={{ boxShadow: "var(--shadow-offer)" }}
     >
       <img

@@ -1,65 +1,75 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Reveal } from "./Reveal";
+import { ChevronDown } from "lucide-react";
+import { WhatsAppCTA } from "./WhatsAppCTA";
+import { hasWhatsApp } from "@/lib/whatsapp";
+import { analytics } from "@/lib/analytics";
 
 const faqs = [
   {
     q: "Como envio minha ideia?",
-    a: "Na página de pedido, você conta sua história em um formulário rápido: para quem é, qual a ocasião e o que você imagina. Leva menos de 2 minutos.",
+    a: "Na página de pedido, conte a história ou a mensagem, escolha o estilo e, se quiser, envie sua letra. Você confere as opções antes do pagamento.",
   },
   {
-    q: "É seguro comprar?",
-    a: "Sim. O pagamento é único, sem assinatura, e a compra é finalizada em um checkout seguro. Se preferir falar com uma pessoa antes de decidir, é só chamar no WhatsApp.",
-  },
-  {
-    q: "Posso escolher o estilo da música?",
-    a: "Sim. Sertanejo, pop, pagode, funk, rock, eletrônica, MPB, gospel e mais. Você escolhe — ou descreve o clima e nós sugerimos.",
+    q: "Posso escolher o estilo e enviar minha letra?",
+    a: "Sim. Você pode escolher entre os estilos do formulário, indicar outro e enviar uma letra própria. Se não tiver letra, a composição está incluída.",
   },
   {
     q: "Quanto tempo demora?",
-    a: "Sua música é produzida com cuidado e entregue em poucos dias úteis. O prazo exato é informado junto com a confirmação do pedido.",
+    a: "O prazo de entrega é de 24h. Se você tem uma data ou solicitação específica, confirme os detalhes com a equipe ao fazer seu pedido.",
   },
   {
     q: "Como recebo minha música?",
-    a: "Você recebe o arquivo digital em alta qualidade, pronto para ouvir e compartilhar, no seu e-mail e WhatsApp.",
+    a: "A entrega é digital, no e-mail e WhatsApp informados no pedido. Confira seus dados para receber o arquivo.",
   },
   {
-    q: "Posso usar minha música nas redes sociais?",
-    a: "Pode. A música é sua: poste no Instagram, TikTok, WhatsApp, YouTube — onde quiser.",
+    q: "Posso pedir alterações?",
+    a: "Sim. Você pode solicitar até 3 rodadas de alterações na música. Envie os detalhes do que quer ajustar para orientar cada revisão.",
+  },
+  {
+    q: "Posso usar a música no meu negócio?",
+    a: "Informe o uso previsto no pedido. Para campanhas, anúncios, monetização ou distribuição, confirme as condições de uso e direitos com a equipe antes de contratar.",
+  },
+  {
+    q: "O lançamento nas plataformas está nos R$67?",
+    a: "Não. A música de R$67 tem entrega digital. O serviço de lançamento no Spotify, YouTube Music, Apple Music e Deezer está incluído no pacote completo, que também tem capa e página exclusiva.",
   },
   {
     q: "Como funciona a página exclusiva?",
-    a: "É um extra opcional: uma página personalizada onde sua música fica disponível para tocar, com link para você compartilhar com quem quiser.",
+    a: "É uma página para apresentar, ouvir e compartilhar sua música por um link. Você pode escolher esse extra no pedido ou recebê-lo no pacote completo.",
   },
   {
-    q: "Como funciona o lançamento nas plataformas?",
-    a: "No pacote completo, sua música é lançada oficialmente no Spotify, YouTube Music, Apple Music e Deezer. Cuidamos de tudo para você.",
+    q: "Como funciona o pagamento?",
+    a: "Você paga por Pix ou cartão, na página de pedido, com processamento pela Cakto. Veja os itens e o total antes de finalizar. O pagamento é único, sem assinatura.",
   },
 ];
 
 export function FAQ() {
   return (
-    <section id="faq" className="border-t border-border py-16 sm:py-24">
-      <div className="mx-auto max-w-3xl px-5">
-        <Reveal>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">Perguntas frequentes</h2>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <Accordion type="single" collapsible className="mt-8">
-            {faqs.map((faq) => (
-              <AccordionItem key={faq.q} value={faq.q} className="border-border">
-                <AccordionTrigger className="text-left text-base font-semibold">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">{faq.a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </Reveal>
+    <section id="faq" className="epic-section">
+      <div className="epic-container epic-faq-layout">
+        <div className="epic-faq-intro">
+          <p className="epic-kicker">Antes do próximo play</p>
+          <h2>O que você quer saber antes de pedir?</h2>
+          <p>Tem uma data ou um uso específico? Tire sua dúvida com a equipe.</p>
+          {hasWhatsApp() ? (
+            <WhatsAppCTA variant="link" label="Tirar uma dúvida no WhatsApp" />
+          ) : null}
+        </div>
+        <div className="epic-faq-list">
+          {faqs.map((faq) => (
+            <details
+              key={faq.q}
+              onToggle={(event) => {
+                if (event.currentTarget.open) analytics.faqOpened(faq.q);
+              }}
+            >
+              <summary>
+                {faq.q}
+                <ChevronDown size={18} aria-hidden="true" />
+              </summary>
+              <p>{faq.a}</p>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -64,6 +64,8 @@ export function PlatformLogos({
             src={platform.src}
             alt={platform.alt}
             loading="lazy"
+            width={120}
+            height={40}
             decoding="async"
             className={cn(BASE_IMG, platform.imgClass ?? "max-h-6")}
           />

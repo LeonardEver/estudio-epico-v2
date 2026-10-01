@@ -6,7 +6,7 @@ import { analytics } from "@/lib/analytics";
 
 export const Route = createFileRoute("/pedido-recebido")({
   validateSearch: (search: Record<string, unknown>) => ({
-    orderId: typeof search["order_id"] === "string" ? (search["order_id"] as string) : undefined,
+    order_id: typeof search["order_id"] === "string" ? (search["order_id"] as string) : undefined,
   }),
   head: () => ({
     meta: [
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/pedido-recebido")({
  * acontece após o webhook de pagamento confirmar o pedido.
  */
 function SuccessPage() {
-  const { orderId } = Route.useSearch();
+  const { order_id: orderId } = Route.useSearch();
 
   useEffect(() => {
     analytics.streamingUpsellShown();
@@ -35,7 +35,7 @@ function SuccessPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <main id="main-content" className="min-h-screen bg-background">
       <StreamingUpsell onDecline={scrollToConfirmation} />
 
       <section id="confirmacao" className="flex flex-col items-center px-5 py-20 text-center">

@@ -25,9 +25,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function OrderWizard() {
+export function OrderWizard({ initialBundle = false }: { initialBundle?: boolean }) {
   const navigate = useNavigate();
-  const [values, setValues] = useState<OrderFormValues>(INITIAL_ORDER);
+  const [values, setValues] = useState<OrderFormValues>(() => ({
+    ...INITIAL_ORDER,
+    bundle: initialBundle,
+  }));
   const [step, setStep] = useState<Step>("MUSICA");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [charging, setCharging] = useState(false);
@@ -73,12 +76,18 @@ export function OrderWizard() {
       if (message) fieldErrors[field as keyof FieldErrors] = message;
     }
     setErrors(fieldErrors);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    });
     return false;
   };
 
   const goTo = (next: Step) => {
     if (next === "EXTRAS" || next === "PAGAMENTO") {
       if (!validateMusicStep()) return;
+    }
+    if (STEPS.findIndex((item) => item.id === next) > STEPS.findIndex((item) => item.id === step)) {
+      analytics.orderStepCompleted(step);
     }
     setStep(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -202,7 +211,7 @@ export function OrderWizard() {
   const couponApplied = isKnownCoupon(values.coupon);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main id="main-content" className="min-h-screen bg-background">
       {/* Barra superior compacta */}
       <header className="border-b border-border bg-surface/60 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">

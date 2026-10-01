@@ -14,9 +14,19 @@ declare global {
   }
 }
 
+const STANDARD_EVENTS = new Set([
+  "PageView",
+  "ViewContent",
+  "Lead",
+  "InitiateCheckout",
+  "Purchase",
+  "AddToCart",
+  "AddPaymentInfo",
+]);
+
 function track(event: string, params?: Record<string, unknown>): void {
   if (typeof window === "undefined" || typeof window.fbq !== "function") return;
-  window.fbq("track", event, params);
+  window.fbq(STANDARD_EVENTS.has(event) ? "track" : "trackCustom", event, params);
 }
 
 const TRACKING_KEYS = [
@@ -30,22 +40,72 @@ const TRACKING_KEYS = [
   "s1",
   "s2",
   "s3",
+  "fbclid",
+  "gclid",
+  "ttclid",
+  "msclkid",
 ];
 
-/** UTM/tracking params from the landing page URL — forwarded to Kiwify. */
+const TRACKING_STORAGE_KEY = "epico_attribution_v1";
+
+/** Preserve attribution through the landing → order navigation, without PII. */
 export function captureTrackingParams(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  const params: Record<string, string> = {};
+  let params: Record<string, string> = {};
+  try {
+    const saved: unknown = JSON.parse(sessionStorage.getItem(TRACKING_STORAGE_KEY) ?? "{}");
+    if (saved && typeof saved === "object") {
+      Object.entries(saved).forEach(([key, value]) => {
+        if (TRACKING_KEYS.includes(key) && typeof value === "string")
+          params[key] = value.slice(0, 200);
+      });
+    }
+  } catch {
+    /* Storage may be unavailable in private/restricted browsers. */
+  }
+  const current: Record<string, string> = {};
   new URLSearchParams(window.location.search).forEach((value, key) => {
-    if (TRACKING_KEYS.includes(key) && value) params[key] = value;
+    if (TRACKING_KEYS.includes(key) && value) current[key] = value.slice(0, 200);
   });
+  // A new campaign replaces the old campaign fields, rather than mixing them.
+  if (
+    current["utm_source"] ||
+    current["utm_campaign"] ||
+    current["fbclid"] ||
+    current["gclid"] ||
+    current["ttclid"] ||
+    current["msclkid"]
+  )
+    params = current;
+  else params = { ...params, ...current };
+  try {
+    sessionStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify(params));
+  } catch {
+    /* Keep URL capture working. */
+  }
   return params;
 }
 
 export const analytics = {
   /** Fired when any "QUERO MINHA MÚSICA" CTA is clicked. */
-  ctaClick(): void {
-    track("CTA_Click");
+  ctaClick(location = "landing", offer = "musica"): void {
+    captureTrackingParams();
+    track("CTA_Click", { location, offer });
+  },
+  mediaPlay(type: "audio" | "video", id: string): void {
+    track(type === "audio" ? "Audio_Play" : "Video_Play", { content_name: id });
+  },
+  mediaCompleted(type: "audio" | "video", id: string): void {
+    track(type === "audio" ? "Audio_Completed" : "Video_Completed", { content_name: id });
+  },
+  sectionViewed(section: string): void {
+    track("Section_Viewed", { content_name: section });
+  },
+  faqOpened(question: string): void {
+    track("FAQ_Opened", { content_name: question });
+  },
+  orderStepCompleted(step: string): void {
+    track("Order_Step_Completed", { content_name: step });
   },
   /** Fired when a navigation CTA scrolls to a funnel section. */
   scrollCtaClick(section: string): void {

@@ -1,175 +1,108 @@
-import { useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
-import { Reveal } from "./Reveal";
-import { ScrollCTA } from "./ScrollCTA";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Headphones } from "lucide-react";
+import { CTAButton } from "./CTAButton";
+import { analytics } from "@/lib/analytics";
+import { pauseOtherMedia } from "@/lib/media";
 
-type Track = {
-  title: string;
-  situation: string;
-  genre: string;
-  mood: string;
-  /** Edite aqui: coloque o arquivo em public/audio/ e informe o caminho. */
-  src?: string;
-};
-
-// Resultados reais: cada música começou com uma ideia enviada por um cliente.
-const tracks: Track[] = [
+const tracks = [
   {
     title: "Carnes do João",
     situation: "Jingle para loja",
     genre: "Sertanejo",
-    mood: "Energético",
     src: "/audio/carnes-do-joao.mp3",
-  },
-  {
-    title: "Lili Roupas",
-    situation: "Música para marca",
-    genre: "Pop",
-    mood: "Emocional",
-    src: "/audio/lili-roupas.mp3",
-  },
-  {
-    title: "Viva Leve - Viagens",
-    situation: "Música para negócio",
-    genre: "Samba",
-    mood: "Leve",
-    src: "/audio/viva-leve.mp3",
+    id: "jingle",
+    label: "CJ",
   },
   {
     title: "Aniversário da Luiza",
     situation: "Presente de aniversário",
     genre: "Acústico",
-    mood: "Emocional",
     src: "/audio/niverluiza.mp3",
+    id: "presente",
+    label: "AL",
+  },
+  {
+    title: "Lili Roupas",
+    situation: "Música para marca",
+    genre: "Pop",
+    src: "/audio/lili-roupas.mp3",
+    id: "marca",
+    label: "LR",
+  },
+  {
+    title: "Viva Leve",
+    situation: "Música para negócio",
+    genre: "Samba",
+    src: "/audio/viva-leve.mp3",
+    id: "negocio",
+    label: "VL",
   },
 ];
 
-const BARS = 44;
-const heights = Array.from({ length: BARS }, (_, i) =>
-  Math.round(28 + Math.abs(Math.sin(i * 1.7) * 52) + ((i * 13) % 17)),
-);
-
-function Waveform({ progress, active }: { progress: number; active: boolean }) {
+function TrackPlayer({ track }: { track: (typeof tracks)[number] }) {
+  const [failed, setFailed] = useState(false);
   return (
-    <div className="flex h-12 items-center gap-[3px]">
-      {heights.map((h, i) => {
-        const filled = active && i / BARS <= progress;
-        return (
-          <span
-            key={i}
-            className={cn(
-              "flex-1 rounded-full transition-colors duration-150",
-              filled ? "bg-accent" : "bg-foreground/15",
-            )}
-            style={{ height: `${Math.min(h, 100)}%` }}
-          />
-        );
-      })}
-    </div>
+    <article id={`audio-${track.id}`} className="epic-track">
+      <div className="epic-track-identity">
+        <span className={`epic-track-cover epic-track-cover-${track.id}`} aria-hidden="true">
+          {track.label}
+        </span>
+        <div>
+          <p>{track.situation}</p>
+          <h3>{track.title}</h3>
+          <span>{track.genre}</span>
+        </div>
+      </div>
+      <audio
+        controls
+        preload="none"
+        aria-label={`Ouvir ${track.title}`}
+        src={track.src}
+        onPlay={(event) => {
+          setFailed(false);
+          pauseOtherMedia(event.currentTarget);
+          analytics.mediaPlay("audio", track.id);
+        }}
+        onEnded={() => analytics.mediaCompleted("audio", track.id)}
+        onError={() => setFailed(true)}
+      />
+      {failed ? (
+        <p className="epic-media-error" role="status">
+          Não foi possível carregar esta faixa. Tente reproduzir novamente.
+        </p>
+      ) : null}
+    </article>
   );
 }
 
 export function AudioShowcase() {
-  const [current, setCurrent] = useState<number | null>(null);
-  const [progress, setProgress] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => () => audioRef.current?.pause(), []);
-
-  const toggle = (index: number, src: string) => {
-    if (current === index) {
-      audioRef.current?.pause();
-      setCurrent(null);
-      return;
-    }
-    audioRef.current?.pause();
-    const audio = new Audio(src);
-    audio.addEventListener("timeupdate", () =>
-      setProgress(audio.duration ? audio.currentTime / audio.duration : 0),
-    );
-    audio.addEventListener("ended", () => {
-      setCurrent(null);
-      setProgress(0);
-    });
-    audioRef.current = audio;
-    setProgress(0);
-    setCurrent(index);
-    void audio.play();
-  };
-
   return (
-    <section id="exemplos" className="py-16 sm:py-24">
-      <div className="mx-auto max-w-5xl px-5 text-center">
-        <Reveal>
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-accent uppercase">
-            Resultados reais
-          </p>
-          <h2 className="mt-3 text-3xl leading-tight font-bold sm:text-5xl">
-            OUÇA O <span className="offer-gradient-text">RESULTADO.</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Essas são músicas produzidas a partir das histórias e ideias dos nossos clientes.
-          </p>
-        </Reveal>
-
-        <div className="mt-10 grid gap-4 text-left sm:grid-cols-2">
-          {tracks.map((track, i) => {
-            const active = current === i;
-            const disabled = !track.src;
-            return (
-              <Reveal key={`${track.genre}-${i}`} delay={(i % 2) * 0.04}>
-                <article className="h-full rounded-2xl border border-border bg-surface-2/70 p-5">
-                  <div className="flex items-center gap-4">
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => track.src && toggle(i, track.src)}
-                      aria-label={active ? "Pausar" : "Reproduzir"}
-                      className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[image:var(--gradient-price)] text-primary-foreground transition-transform duration-200 hover:scale-105 disabled:cursor-not-allowed disabled:bg-none disabled:bg-foreground/10 disabled:text-muted-foreground"
-                    >
-                      {active ? (
-                        <Pause className="size-5 fill-current" />
-                      ) : (
-                        <Play className="ml-0.5 size-5 fill-current" />
-                      )}
-                    </button>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold tracking-[0.14em] text-accent uppercase">
-                        {track.situation}
-                      </p>
-                      <h3 className="mt-0.5 truncate text-base font-semibold">{track.title}</h3>
-                      <p className="text-xs tracking-wide text-muted-foreground uppercase">
-                        {track.genre} · {track.mood}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <Waveform progress={progress} active={active} />
-                  </div>
-                  {disabled && (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      [ADICIONAR ÁUDIO EM /public/audio/]
-                    </p>
-                  )}
-                </article>
-              </Reveal>
-            );
-          })}
-        </div>
-
-        <Reveal delay={0.05}>
-          <p className="mt-9 text-sm text-muted-foreground sm:text-base">
-            Agora imagine uma música dessas com{" "}
-            <span className="text-foreground">a sua história.</span>
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <div className="mt-8">
-            <ScrollCTA target="como-funciona" label="VER COMO FUNCIONA" />
+    <section id="exemplos" className="epic-section epic-examples">
+      <div className="epic-container">
+        <div className="epic-section-heading">
+          <div>
+            <p className="epic-kicker">
+              <Headphones size={16} aria-hidden="true" /> O som fala por si
+            </p>
+            <h2>
+              Antes de imaginar a sua,
+              <br className="epic-desktop-break" /> dê o play.
+            </h2>
           </div>
-        </Reveal>
+          <p>
+            Ouça músicas produzidas pelo Estúdio Épico. Cada exemplo mostra uma forma de transformar
+            uma ideia em som.
+          </p>
+        </div>
+        <div className="epic-track-grid">
+          {tracks.map((track) => (
+            <TrackPlayer key={track.id} track={track} />
+          ))}
+        </div>
+        <div className="epic-examples-bottom">
+          <p>A próxima pode contar a sua história.</p>
+          <CTAButton size="md" location="exemplos" />
+        </div>
       </div>
     </section>
   );

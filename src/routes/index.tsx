@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { analytics, captureTrackingParams } from "@/lib/analytics";
+import heroStudio from "@/assets/hero-studio.jpg";
 import { HeroOffer } from "@/components/landing/HeroOffer";
 import { UGCVideo } from "@/components/landing/UGCVideo";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ForWhomSection } from "@/components/landing/ForWhomSection";
-import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { AudioShowcase } from "@/components/landing/AudioShowcase";
 import { MainOffer } from "@/components/landing/MainOffer";
 import { FAQ } from "@/components/landing/FAQ";
@@ -25,6 +27,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: `https://estudioepico.vercel.app${heroStudio}` },
+      { property: "og:locale", content: "pt_BR" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -32,32 +36,42 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  useEffect(() => {
+    captureTrackingParams();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            analytics.sectionViewed(entry.target.id);
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
+    document.querySelectorAll("main > section[id]").forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
   return (
-    <main className="min-h-screen bg-background pb-20 lg:pb-0">
-      {/* Funil: promessa + preço → prova (UGC) → resultado real (músicas) →
-          como funciona → aplicações → oferta → dúvidas → decisão.
-          O preço vem ANTES do vídeo: o visitante entende a oferta primeiro. */}
+    <main id="main-content" className="epic-landing">
       <HeroOffer />
-      <UGCVideo />
       <AudioShowcase />
+      <UGCVideo />
       <HowItWorks />
       <ForWhomSection />
-      <WhatYouGet />
       <MainOffer />
       <FAQ />
       <FinalOffer />
-      <footer className="border-t border-border py-10 text-center text-xs text-muted-foreground">
-        <p className="font-display text-sm font-bold tracking-widest text-foreground">
-          ESTUDIO ÉPICO - PRODUÇÃO MUSICAL PROFISSIONAL
+      <footer className="epic-footer epic-container">
+        <p className="epic-brand">
+          estúdio <strong>épico.</strong>
         </p>
         {hasWhatsApp() ? (
           <div className="mt-3">
             <WhatsAppCTA variant="link" label="Falar no WhatsApp" />
           </div>
-        ) : (
-          <p className="mt-2">[CONTATO: WhatsApp +55 11 95859-4370]</p>
-        )}
-        <p className="mt-2">© {new Date().getFullYear()} — Todos os direitos reservados.</p>
+        ) : null}
+        <p>© {new Date().getFullYear()} Estúdio Épico. Música personalizada.</p>
       </footer>
       <StickyMobileCTA />
       <WhatsAppFloat />
